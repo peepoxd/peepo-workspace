@@ -1,6 +1,11 @@
-# Demo — The Awakening Example
+# Demo — The Awakening Example (Superseded)
 
 > "Simplicity is the ultimate demonstration."
+
+**⚠️ SUPERSEDED**: This identity evolved into **Bright Oracle** on 30 Jan 2026.
+See: `ψ/memory/resonance/bright.md`
+
+---
 
 ## Birth
 
