@@ -1,0 +1,338 @@
+📄 Claude Code — Concept Tree
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 Claude Code คืออะไร?
+│
+├─ Agentic Coding Tool ที่ทำงานใน Terminal
+├─ ช่วย Developer เขียนโค้ด, debug, refactor, git workflow
+├─ ใช้ AI (Claude) เป็น Brain
+└─ ขยายความสามารถผ่าน Plugin System
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🏗️ ARCHITECTURE OVERVIEW
+│
+├─ 📦 1. PLUGIN SYSTEM (หัวใจหลัก)
+│  │
+│  ├─ ทุกความสามารถขยายผ่าน Plugin
+│  ├─ Plugin ประกอบด้วย:
+│  │  ├─ Commands (คำสั่ง /slash)
+│  │  ├─ Agents (AI ผู้เชี่ยวชาญ)
+│  │  ├─ Skills (ความสามารถพิเศษ)
+│  │  ├─ Hooks (Event triggers)
+│  │  └─ MCP Servers (External tools)
+│  │
+│  └─ โครงสร้าง Plugin:
+│     │
+│     │  plugin-name/
+│     │  ├── .claude-plugin/
+│     │  │   └── plugin.json        # Metadata (ชื่อ, version, author)
+│     │  ├── commands/              # Slash commands (*.md)
+│     │  ├── agents/                # AI agents (*.md)
+│     │  ├── skills/                # Skills (*.md)
+│     │  ├── hooks/
+│     │  │   ├── hooks.json         # Hook configuration
+│     │  │   └── hooks-handlers/    # Handler scripts
+│     │  └── .mcp.json              # MCP server config
+│
+├─ 🎮 2. COMMANDS (คำสั่ง)
+│  │
+│  ├─ Slash commands เช่น /commit, /code-review
+│  ├─ เขียนเป็น Markdown + YAML frontmatter
+│  ├─ กำหนด allowed-tools (security)
+│  ├─ Dynamic context injection ด้วย !`backticks`
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ---
+│     │  allowed-tools: Bash(git:*), Read, Write
+│     │  description: Create a git commit
+│     │  ---
+│     │
+│     │  ## Context
+│     │  - Git status: !`git status`
+│     │
+│     │  ## Your task
+│     │  Create a commit based on changes.
+│
+├─ 🤖 3. AGENTS (AI ผู้เชี่ยวชาญ)
+│  │
+│  ├─ Specialized AI สำหรับงานเฉพาะทาง
+│  ├─ เลือก Model ได้ (opus, sonnet, haiku)
+│  ├─ Parallel execution (หลาย agent พร้อมกัน)
+│  ├─ Confidence scoring (0-100)
+│  │
+│  ├─ ตัวอย่าง Agent:
+│  │  ├─ code-reviewer — ตรวจ code quality
+│  │  ├─ code-explorer — วิเคราะห์ codebase
+│  │  ├─ code-architect — ออกแบบ architecture
+│  │  └─ plugin-validator — ตรวจสอบ plugin
+│  │
+│  └─ โครงสร้าง Agent:
+│     │
+│     │  ---
+│     │  name: code-reviewer
+│     │  model: opus
+│     │  color: green
+│     │  ---
+│     │
+│     │  You are an expert code reviewer...
+│
+├─ 🎯 4. SKILLS (ความสามารถพิเศษ)
+│  │
+│  ├─ Reusable AI-powered modules
+│  ├─ ความรู้เฉพาะทาง (domain knowledge)
+│  ├─ Auto-invoke ตาม context
+│  │
+│  ├─ ตัวอย่าง Skills:
+│  │  ├─ frontend-design — UI/UX guidance
+│  │  ├─ hook-development — สร้าง hooks
+│  │  ├─ mcp-integration — เชื่อมต่อ external tools
+│  │  └─ plugin-settings — จัดการ config
+│  │
+│  └─ โครงสร้าง Skill:
+│     │
+│     │  ---
+│     │  name: skill-name
+│     │  description: When to invoke this skill
+│     │  ---
+│     │
+│     │  [Comprehensive guidance...]
+│
+├─ 🪝 5. HOOKS (Event Triggers)
+│  │
+│  ├─ Event-driven automation
+│  ├─ ทำงานที่ lifecycle points ต่างๆ
+│  │
+│  ├─ Hook Events:
+│  │  │
+│  │  │  ┌─────────────────┬──────────────────────────────────┐
+│  │  │  │ Event           │ เมื่อไหร่                         │
+│  │  │  ├─────────────────┼──────────────────────────────────┤
+│  │  │  │ SessionStart    │ เริ่ม session                    │
+│  │  │  │ SessionEnd      │ จบ session                       │
+│  │  │  │ PreToolUse      │ ก่อนใช้ tool (validate)          │
+│  │  │  │ PostToolUse     │ หลังใช้ tool (react)             │
+│  │  │  │ Stop            │ Agent เสร็จงาน                   │
+│  │  │  │ UserPromptSubmit│ User พิมพ์คำสั่ง                 │
+│  │  │  └─────────────────┴──────────────────────────────────┘
+│  │
+│  ├─ Hook Types:
+│  │  ├─ Prompt-Based (LLM reasoning)
+│  │  └─ Command-Based (bash/python script)
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  {
+│     │    "hooks": {
+│     │      "PreToolUse": [{
+│     │        "matcher": "Bash",
+│     │        "hooks": [{
+│     │          "type": "command",
+│     │          "command": "python validate.py"
+│     │        }]
+│     │      }]
+│     │    }
+│     │  }
+│
+└─ 🔌 6. MCP (Model Context Protocol)
+   │
+   ├─ เชื่อมต่อ External Services
+   ├─ Standard protocol สำหรับ LLM tools
+   │
+   ├─ Transport Types:
+   │  ├─ stdio — Local process
+   │  ├─ HTTP — REST API
+   │  └─ SSE — Server-Sent Events
+   │
+   └─ ตัวอย่าง:
+      │
+      │  {
+      │    "database-server": {
+      │      "command": "./servers/db-server",
+      │      "args": ["--config", "config.json"]
+      │    }
+      │  }
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📁 CONFIGURATION HIERARCHY
+│
+├─ 1. Global (User-wide)
+│  └─ ~/.claude/settings.json
+│
+├─ 2. Project (Repo-specific)
+│  └─ .claude/settings.json
+│
+├─ 3. Local Extensions
+│  ├─ .claude/commands/*.md
+│  ├─ .claude/agents/*.md
+│  └─ .claude/hooks/hooks.json
+│
+└─ 4. Plugins
+   └─ plugins/*/
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔄 DATA FLOW (Session Lifecycle)
+│
+│  ┌─────────────────┐
+│  │  SessionStart   │ ← Hooks: Initialize context
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │   User Input    │ ← UserPromptSubmit hook
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │  Tool Planning  │ ← AI decides which tools
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │  PreToolUse     │ ← Validate before execution
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │ Tool Execution  │ ← Bash, Read, Write, etc.
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │  PostToolUse    │ ← React to results
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │    Response     │ ← Generate output
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │   Stop Hook     │ ← Verify completion
+│  └────────┬────────┘
+│           ▼
+│  ┌─────────────────┐
+│  │   SessionEnd    │ ← Cleanup
+│  └─────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔐 SECURITY MODEL
+│
+├─ Permission System
+│  │
+│  ├─ allowed-tools — Whitelist เครื่องมือที่ใช้ได้
+│  │  ├─ Bash(git:*) — เฉพาะ git commands
+│  │  ├─ Bash(*) — ทุก bash command
+│  │  ├─ Read, Write — File operations
+│  │  └─ Tool(*) — ทุก tool
+│  │
+│  ├─ Hook Validation
+│  │  ├─ PreToolUse — ตรวจก่อนรัน
+│  │  └─ Exit codes: 0=pass, 1=warn, 2=block
+│  │
+│  └─ Security Patterns (ตรวจจับ)
+│     ├─ Command injection
+│     ├─ dangerouslySetInnerHTML (XSS)
+│     ├─ GitHub Actions vulnerabilities
+│     └─ Sensitive file access
+│
+└─ Best Practices
+   ├─ ไม่ commit secrets (.env)
+   ├─ ไม่ใช้ --force flags
+   └─ Review ก่อน merge
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📦 OFFICIAL PLUGINS (13+)
+│
+├─ 🛠️ Development (7)
+│  ├─ agent-sdk-dev      → /new-sdk-app (สร้าง SDK project)
+│  ├─ feature-dev        → /feature-dev (7-phase workflow)
+│  ├─ plugin-dev         → /plugin-dev:create-plugin
+│  ├─ frontend-design    → UI/UX guidance (auto-invoke)
+│  ├─ claude-opus-4-5-migration → Model migration
+│  ├─ ralph-wiggum       → Self-referential AI loops
+│  └─ explanatory-output-style → Educational mode
+│
+├─ 📈 Productivity (3)
+│  ├─ commit-commands    → /commit, /commit-push-pr
+│  ├─ code-review        → /code-review (4 parallel agents)
+│  └─ hookify            → /hookify (create hooks easily)
+│
+├─ 📚 Learning (2)
+│  ├─ learning-output-style → Interactive learning
+│  └─ explanatory-output-style → Educational insights
+│
+└─ 🔒 Security (1)
+   └─ security-guidance  → PreToolUse hook (9+ patterns)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⌨️ KEY COMMANDS (CLI)
+│
+├─ Session
+│  ├─ claude              → Start session
+│  ├─ claude --resume     → Resume last session
+│  ├─ claude --continue   → Continue from last
+│  └─ /clear              → Fresh start
+│
+├─ Model
+│  ├─ /model              → Switch model
+│  └─ Alt+P               → Quick switch
+│
+├─ Tools
+│  ├─ /permissions        → Manage tool access
+│  ├─ /mcp                → Manage MCP servers
+│  └─ /plugin             → Manage plugins
+│
+├─ Development
+│  ├─ /commit             → Create git commit
+│  ├─ /code-review        → Review PR
+│  └─ /feature-dev        → Guided development
+│
+└─ Shortcuts
+   ├─ Tab                 → Auto-complete
+   ├─ Ctrl+R              → Search history
+   ├─ Ctrl+B              → Background task
+   ├─ Ctrl+G              → External editor
+   └─ Esc                 → Cancel
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎨 DESIGN PRINCIPLES
+│
+├─ 1. Plugin-First
+│  └─ ทุกความสามารถขยายผ่าน plugins
+│
+├─ 2. Security-First
+│  └─ Explicit allowed-tools whitelist
+│
+├─ 3. Markdown-Driven
+│  └─ Human-readable configuration
+│
+├─ 4. Context-Aware
+│  └─ Dynamic context injection
+│
+├─ 5. Parallel Execution
+│  └─ Multiple agents work independently
+│
+└─ 6. Progressive Disclosure
+   └─ Simple → Advanced layering
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 VERSION INFO
+│
+├─ Current: v2.1.25+
+├─ Runtime: Node.js 18+
+├─ Shell: Bash/Zsh
+│
+└─ Key Milestones:
+   ├─ 2.1.16 — Task management, native plugins
+   ├─ 2.1.15 — Deprecated npm installation
+   └─ 2.1.20 — PR review status, task deletion
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🐸 สรุปโดย Peepo Oracle | 30 January 2026
+   Source: /learn anthropics/claude-code
+
+═══════════════════════════════════════════════════════════════════════════════

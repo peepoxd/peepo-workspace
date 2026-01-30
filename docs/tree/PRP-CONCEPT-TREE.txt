@@ -1,0 +1,300 @@
+═══════════════════════════════════════════════════════════════════════════════
+                    PRP (Product Requirement Prompt) CONCEPT TREE
+                         "Context is King — One-Pass Success"
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 PRP = PRD + Curated Codebase Intelligence + Agent/Runbook
+│
+├─── 📖 CORE PHILOSOPHY
+│    │
+│    ├─── Context is King
+│    │    ├─── AI needs COMPLETE context to succeed first-pass
+│    │    ├─── Vague instructions → multiple iterations
+│    │    └─── Rich context → one-pass success
+│    │
+│    ├─── Patterns Over Intentions
+│    │    ├─── Document what EXISTS in code
+│    │    ├─── Not what was intended
+│    │    └─── Mirror existing patterns exactly
+│    │
+│    └─── Validation-Driven Development
+│         ├─── Every task has executable verification
+│         ├─── Tests are the source of truth
+│         └─── Self-correction through feedback loops
+│
+├─── 🔄 THREE-PHASE WORKFLOW
+│    │
+│    │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│    │   │   DEFINE    │───▶│    PLAN     │───▶│   EXECUTE   │
+│    │   │  /prp-prd   │    │  /prp-plan  │    │/prp-implement│
+│    │   └─────────────┘    └─────────────┘    └─────────────┘
+│    │
+│    ├─── Phase 1: DEFINE (/prp-prd)
+│    │    ├─── Interactive PRD generator
+│    │    ├─── Problem-first methodology
+│    │    ├─── Market & technical research
+│    │    └─── Output: .claude/PRPs/prds/{name}.prd.md
+│    │
+│    ├─── Phase 2: PLAN (/prp-plan)
+│    │    ├─── Create implementation plan from PRD
+│    │    ├─── Systematic codebase exploration
+│    │    ├─── Pattern extraction
+│    │    └─── Output: .claude/PRPs/plans/{name}.plan.md
+│    │
+│    └─── Phase 3: EXECUTE (/prp-implement)
+│         ├─── Execute tasks with validation loops
+│         ├─── Fix failures immediately
+│         ├─── Re-validate after each fix
+│         └─── Output: Working code + git commits
+│
+├─── 🤖 RALPH LOOP (Autonomous Execution)
+│    │
+│    │   Named after Geoffrey Huntley's Ralph Wiggum technique
+│    │
+│    │        ┌──────────┐
+│    │        │ Implement │
+│    │        └────┬─────┘
+│    │             │
+│    │        ┌────▼─────┐
+│    │        │ Validate  │◄──────────────┐
+│    │        └────┬─────┘               │
+│    │             │                     │
+│    │      ┌──────▼──────┐              │
+│    │      │  Pass?      │              │
+│    │      └──────┬──────┘              │
+│    │        Yes  │  No                 │
+│    │        ┌────┘  └────┐             │
+│    │        │            │             │
+│    │   ┌────▼────┐  ┌────▼────┐        │
+│    │   │ COMPLETE│  │   Fix   │────────┘
+│    │   └─────────┘  └─────────┘
+│    │
+│    ├─── Command: /prp-ralph <plan.md> --max-iterations 20
+│    ├─── State file: .claude/prp-ralph.state.md
+│    └─── Use case: Long-running features, "make coffee & return"
+│
+├─── 📋 13 CORE COMMANDS
+│    │
+│    ├─── Feature Development
+│    │    ├─── /prp-prd ─────────── Create PRD with phases
+│    │    ├─── /prp-plan ────────── Create implementation plan
+│    │    ├─── /prp-implement ───── Execute with validation
+│    │    └─── /prp-ralph ───────── Autonomous until complete
+│    │
+│    ├─── Issue & Debug
+│    │    ├─── /prp-issue-investigate ── Analyze GitHub issue
+│    │    ├─── /prp-issue-fix ────────── Implement the fix
+│    │    └─── /prp-debug ────────────── Root cause (5 Whys)
+│    │
+│    ├─── Git & Review
+│    │    ├─── /prp-commit ───────── Smart commit (natural language)
+│    │    ├─── /prp-pr ───────────── Create pull request
+│    │    ├─── /prp-review ───────── PR code review
+│    │    └─── /prp-review-agents ── Multi-agent review
+│    │
+│    └─── Utility
+│         ├─── /prp-ralph-cancel ─── Stop Ralph loop
+│         └─── /prp-codebase-question ─ Ask about codebase
+│
+├─── 🧠 10 SPECIALIZED AGENTS
+│    │
+│    │   Each agent has NARROW scope + explicit anti-patterns
+│    │   "Told what NOT to do as much as what to do"
+│    │
+│    ├─── Codebase Analysis
+│    │    │
+│    │    ├─── codebase-explorer
+│    │    │    ├─── Purpose: WHERE code lives
+│    │    │    ├─── Focus: File locations, naming conventions
+│    │    │    └─── Output: Code snippets with file:line
+│    │    │
+│    │    ├─── codebase-analyst
+│    │    │    ├─── Purpose: HOW code works
+│    │    │    ├─── Focus: Data flow, implementation details
+│    │    │    ├─── ⚠️ DO NOT suggest improvements
+│    │    │    └─── ⚠️ ONLY describe what exists
+│    │    │
+│    │    └─── web-researcher
+│    │         ├─── Purpose: External documentation
+│    │         ├─── Focus: APIs, libraries, best practices
+│    │         └─── Output: Sources with authority assessment
+│    │
+│    └─── Quality & Review
+│         │
+│         ├─── code-reviewer
+│         │    ├─── Confidence threshold: 80+ only
+│         │    └─── Checks: Guidelines, bugs, type safety
+│         │
+│         ├─── silent-failure-hunter
+│         │    ├─── Zero tolerance for silent failures
+│         │    ├─── ⚠️ Empty catch blocks = CRITICAL
+│         │    └─── ⚠️ Log & continue = CRITICAL
+│         │
+│         ├─── comment-analyzer ──── Comment quality
+│         ├─── pr-test-analyzer ──── Test coverage
+│         ├─── type-design-analyzer ─ Type validation
+│         ├─── code-simplifier ───── Clarity improvements
+│         └─── docs-impact-agent ─── Documentation updates
+│
+├─── ✅ VALIDATION PYRAMID
+│    │
+│    │         ┌─────────────────────┐
+│    │         │  Level 4: Deploy    │  Manual/CI-CD
+│    │         └──────────┬──────────┘
+│    │         ┌──────────▼──────────┐
+│    │         │  Level 3: Integration│  API, E2E tests
+│    │         └──────────┬──────────┘
+│    │         ┌──────────▼──────────┐
+│    │         │  Level 2: Unit Tests │  pytest, jest
+│    │         └──────────┬──────────┘
+│    │         ┌──────────▼──────────┐
+│    │         │  Level 1: Syntax/Lint│  ruff, eslint, mypy
+│    │         └─────────────────────┘
+│    │
+│    └─── Each level = executable command in plan
+│
+├─── 📁 ARTIFACT STRUCTURE
+│    │
+│    │   .claude/PRPs/
+│    │   ├─── prds/              # Product requirement docs
+│    │   │    └─── {name}.prd.md
+│    │   ├─── plans/             # Implementation plans
+│    │   │    ├─── {name}.plan.md
+│    │   │    └─── completed/    # Archived
+│    │   ├─── reports/           # Implementation reports
+│    │   ├─── issues/            # Issue investigations
+│    │   │    └─── completed/
+│    │   ├─── reviews/           # PR review reports
+│    │   └─── ralph-archives/    # Ralph loop states
+│    │
+│    └─── PRD with Implementation Phases Table:
+│         │
+│         │ # │ Phase │ Status      │ Parallel │ Depends │
+│         │───│───────│─────────────│──────────│─────────│
+│         │ 1 │ Auth  │ complete    │ -        │ -       │
+│         │ 2 │ API   │ in-progress │ -        │ 1       │
+│         │ 3 │ UI    │ pending     │ with 4   │ 2       │
+│         │ 4 │ Tests │ pending     │ with 3   │ 2       │
+│
+├─── 🔧 PRP STRUCTURE (What Makes a Good PRP)
+│    │
+│    │   ┌─────────────────────────────────────────────────┐
+│    │   │ ## Goal                                         │
+│    │   │ [Clear end state and desires]                   │
+│    │   │                                                 │
+│    │   │ ## Why                                          │
+│    │   │ [Business value and user impact]                │
+│    │   │                                                 │
+│    │   │ ## What                                         │
+│    │   │ [User-visible behavior + technical requirements]│
+│    │   │                                                 │
+│    │   │ ## Context                                      │
+│    │   │ - Documentation URLs                            │
+│    │   │ - Code examples FROM THIS CODEBASE              │
+│    │   │ - Existing patterns to follow                   │
+│    │   │ - Known gotchas and edge cases                  │
+│    │   │                                                 │
+│    │   │ ## Blueprint                                    │
+│    │   │ [Pseudocode with critical details]              │
+│    │   │                                                 │
+│    │   │ ## Validation                                   │
+│    │   │ - Level 1: `ruff check && mypy .`               │
+│    │   │ - Level 2: `pytest tests/ -v`                   │
+│    │   │ - Level 3: `npm run build`                      │
+│    │   └─────────────────────────────────────────────────┘
+│    │
+│    └─── ⚠️ Anti-patterns:
+│         ├─── Vague descriptions ("add authentication")
+│         ├─── Missing codebase patterns
+│         ├─── Untestable success criteria
+│         └─── Assumptions without research
+│
+├─── 🚀 QUICK START WORKFLOWS
+│    │
+│    ├─── Large Feature (Full Flow)
+│    │    │
+│    │    │   /prp-prd "user authentication"
+│    │    │        ↓
+│    │    │   [Interactive Q&A + Research]
+│    │    │        ↓
+│    │    │   .claude/PRPs/prds/user-auth.prd.md
+│    │    │        ↓
+│    │    │   /prp-plan .claude/PRPs/prds/user-auth.prd.md
+│    │    │        ↓
+│    │    │   /prp-implement .claude/PRPs/plans/user-auth-phase-1.plan.md
+│    │    │        ↓
+│    │    │   /prp-commit && /prp-pr
+│    │    │        ↓
+│    │    │   Repeat for Phase 2, 3...
+│    │
+│    ├─── Medium Feature (Direct)
+│    │    │
+│    │    │   /prp-plan "add pagination to API"
+│    │    │        ↓
+│    │    │   /prp-implement .claude/PRPs/plans/add-pagination.plan.md
+│    │
+│    ├─── Bug Fix (Issue Flow)
+│    │    │
+│    │    │   /prp-issue-investigate 123
+│    │    │        ↓
+│    │    │   /prp-issue-fix 123
+│    │
+│    └─── Autonomous (Ralph)
+│         │
+│         │   /prp-ralph .claude/PRPs/plans/feature.plan.md --max-iterations 20
+│         │        ↓
+│         │   [Implement → Validate → Fix → Loop]
+│         │        ↓
+│         │   <promise>COMPLETE</promise>
+│
+└─── 📚 INSTALLATION
+     │
+     ├─── From GitHub (Recommended)
+     │    │
+     │    │   /plugin marketplace add Wirasm/PRPs-agentic-eng
+     │    │   /plugin install prp-core@prp-marketplace
+     │
+     ├─── Local Development
+     │    │
+     │    │   /plugin marketplace add /path/to/PRPs-agentic-eng
+     │    │   /plugin install prp-core@prp-marketplace
+     │
+     └─── Team Auto-Install (.claude/settings.json)
+          │
+          │   {
+          │     "extraKnownMarketplaces": {
+          │       "prp-marketplace": {
+          │         "source": "Wirasm/PRPs-agentic-eng"
+          │       }
+          │     },
+          │     "enabledPlugins": ["prp-core@prp-marketplace"]
+          │   }
+
+═══════════════════════════════════════════════════════════════════════════════
+                              KEY INSIGHTS SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  🎯 "Context is King"                                                       │
+│     └─── Complete context = one-pass success                                │
+│                                                                             │
+│  🔄 "Ralph Loop"                                                            │
+│     └─── Autonomous self-correction until all validations pass              │
+│                                                                             │
+│  🧠 "Specialized Agents"                                                    │
+│     └─── Narrow scope + explicit anti-patterns prevent scope creep          │
+│                                                                             │
+│  ✅ "Validation-Driven"                                                     │
+│     └─── Executable commands are the source of truth                        │
+│                                                                             │
+│  📋 "Patterns Over Intentions"                                              │
+│     └─── Document what EXISTS, not what was intended                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+Source: https://github.com/Wirasm/PRPs-agentic-eng
+Author: Wirasm (hello@rasmuswiding.com)
+Learned by: Peepo Oracle 🐸 | 2026-01-30
+═══════════════════════════════════════════════════════════════════════════════
