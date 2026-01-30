@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e-Granting System - Demo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Sarabun', sans-serif; background: #1a1a2e; padding: 20px; }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: #fff; text-align: center; margin-bottom: 30px; font-size: 28px; }
+
+    .slides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .slide {
+      aspect-ratio: 16/9;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .slide-number {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      z-index: 10;
+    }
+
+    .slide-content {
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 8px 15px;
+      color: #fff;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* Slide 1: Title */
+    .slide-1 { background: #1F4E79; }
+    .slide-1 .title { font-size: 28px; font-weight: bold; color: #fff; margin-top: 40px; }
+    .slide-1 .subtitle { font-size: 16px; color: #fff; margin-top: 10px; }
+    .slide-1 .footer { background: #2E75B6; margin-top: auto; padding: 10px; font-size: 12px; color: #fff; }
+
+    /* Slide 2: Overview */
+    .slide-2 { background: #fff; }
+    .slide-2 .header { background: #2E75B6; }
+    .slide-2 .content { display: flex; gap: 15px; padding: 10px; flex: 1; }
+    .slide-2 .left, .slide-2 .right { flex: 1; }
+    .slide-2 h3 { color: #1F4E79; font-size: 13px; margin-bottom: 5px; }
+    .slide-2 p, .slide-2 li { font-size: 11px; color: #333; }
+    .slide-2 table { width: 100%; font-size: 10px; border-collapse: collapse; }
+    .slide-2 th { background: #DBEEF4; padding: 4px; }
+    .slide-2 td { padding: 4px; border: 1px solid #ccc; }
+
+    /* Slide 3: Agile */
+    .slide-3 { background: #fff; }
+    .slide-3 .header { background: #008B8B; }
+    .slide-3 .content { padding: 10px; flex: 1; }
+    .slide-3 .sprint-cycle { display: flex; gap: 10px; align-items: center; margin: 10px 0; }
+    .slide-3 .sprint { width: 60px; height: 60px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; border: 2px solid #999; }
+    .slide-3 .arrow { font-size: 16px; color: #999; }
+    .slide-3 h4 { color: #008B8B; font-size: 12px; margin: 10px 0 5px; }
+    .slide-3 li { font-size: 10px; margin-left: 15px; }
+
+    /* Slide 4: Workflow */
+    .slide-4 { background: #fff; }
+    .slide-4 .header { background: #2E75B6; }
+    .slide-4 .phases { display: flex; gap: 8px; padding: 10px; }
+    .slide-4 .phase { flex: 1; padding: 8px; border-radius: 6px; text-align: center; font-size: 11px; }
+    .slide-4 .phase-title { font-weight: bold; font-size: 12px; }
+    .slide-4 .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+    .slide-4 .detail h4 { font-size: 11px; margin-bottom: 3px; }
+    .slide-4 .detail li { font-size: 9px; margin-left: 12px; }
+
+    /* Slide 5: Modules */
+    .slide-5 { background: #fff; }
+    .slide-5 .header { background: #70AD47; }
+    .slide-5 table { width: calc(100% - 20px); margin: 10px; font-size: 10px; border-collapse: collapse; }
+    .slide-5 th { background: #E2EFDA; padding: 5px; text-align: left; }
+    .slide-5 td { padding: 4px; border: 1px solid #ccc; }
+
+    /* Slide 6: Data Entities */
+    .slide-6 { background: #fff; }
+    .slide-6 .header { background: #5B9BD5; }
+    .slide-6 .content { padding: 10px; display: flex; gap: 15px; }
+    .slide-6 .diagram { flex: 1; }
+    .slide-6 .entities { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
+    .slide-6 .entity { padding: 8px 15px; border-radius: 6px; font-size: 11px; font-weight: bold; text-align: center; border: 2px solid #666; }
+    .slide-6 .sub-entities { display: flex; gap: 8px; flex-wrap: wrap; }
+    .slide-6 .sub-entity { padding: 5px 10px; background: #f5f5f5; border-radius: 4px; font-size: 9px; border: 1px solid #999; }
+    .slide-6 .relations { flex: 1; }
+    .slide-6 table { font-size: 10px; border-collapse: collapse; width: 100%; }
+    .slide-6 th { background: #DBEEF4; padding: 4px; }
+    .slide-6 td { padding: 4px; border: 1px solid #ccc; }
+
+    /* Slide 7: RBAC */
+    .slide-7 { background: #fff; }
+    .slide-7 .header { background: #ED7D31; }
+    .slide-7 .legend { font-size: 10px; padding: 5px 10px; color: #333; }
+    .slide-7 table { width: calc(100% - 20px); margin: 5px 10px; font-size: 10px; border-collapse: collapse; }
+    .slide-7 th { background: #FCE4D6; padding: 4px; }
+    .slide-7 td { padding: 4px; border: 1px solid #ccc; text-align: center; }
+    .slide-7 .check { color: #70AD47; }
+    .slide-7 .view { color: #ED7D31; }
+
+    /* Slide 8: Architecture */
+    .slide-8 { background: #fff; }
+    .slide-8 .header { background: #7030A0; }
+    .slide-8 .content { display: flex; gap: 15px; padding: 10px; }
+    .slide-8 .layers { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .slide-8 .layer { padding: 6px 10px; border-radius: 4px; font-size: 10px; }
+    .slide-8 .layer-name { font-weight: bold; }
+    .slide-8 .external { flex: 1; }
+    .slide-8 h4 { color: #7030A0; font-size: 12px; margin-bottom: 8px; }
+    .slide-8 p { font-size: 10px; margin-bottom: 5px; }
+
+    /* Slide 9: KPI */
+    .slide-9 { background: #fff; }
+    .slide-9 .header { background: #2E7D32; }
+    .slide-9 .content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+    .slide-9 h4 { color: #2E7D32; font-size: 11px; margin-bottom: 5px; }
+    .slide-9 table { font-size: 9px; border-collapse: collapse; width: 100%; }
+    .slide-9 th { background: #C8E6C9; padding: 3px; }
+    .slide-9 td { padding: 3px; border: 1px solid #ccc; }
+    .slide-9 .full-width { grid-column: span 2; }
+
+    /* Slide 10: Roadmap */
+    .slide-10 { background: #fff; }
+    .slide-10 .header { background: #0277BD; }
+    .slide-10 .content { padding: 10px; }
+    .slide-10 .timeline { display: flex; gap: 2px; margin-bottom: 10px; }
+    .slide-10 .month { width: 30px; height: 20px; background: #0277BD; color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+    .slide-10 .phases { display: flex; flex-direction: column; gap: 5px; }
+    .slide-10 .phase-row { display: flex; align-items: center; height: 25px; }
+    .slide-10 .phase-name { width: 120px; font-size: 9px; }
+    .slide-10 .bar { height: 18px; border-radius: 3px; }
+    .slide-10 .milestones { font-size: 10px; margin-top: 10px; color: #0277BD; }
+
+    /* Slide 11: Risks */
+    .slide-11 { background: #fff; }
+    .slide-11 .header { background: #C00000; }
+    .slide-11 table { width: calc(100% - 20px); margin: 10px; font-size: 10px; border-collapse: collapse; }
+    .slide-11 th { background: #FFCDD2; padding: 5px; }
+    .slide-11 td { padding: 5px; border: 1px solid #ccc; }
+    .slide-11 .high { color: #C00000; font-weight: bold; }
+    .slide-11 .medium { color: #ED7D31; font-weight: bold; }
+    .slide-11 .low { color: #70AD47; font-weight: bold; }
+
+    /* Slide 12: Success */
+    .slide-12 { background: #fff; }
+    .slide-12 .header { background: #70AD47; }
+    .slide-12 .factors { display: flex; gap: 10px; padding: 10px; }
+    .slide-12 .factor { flex: 1; padding: 10px; border-radius: 6px; }
+    .slide-12 .factor h4 { color: #2E7D32; font-size: 12px; text-align: center; margin-bottom: 8px; }
+    .slide-12 .factor li { font-size: 10px; margin-left: 12px; }
+
+    /* Slide 13: Thank You */
+    .slide-13 { background: #1F4E79; display: flex; align-items: center; justify-content: center; }
+    .slide-13 .title { font-size: 36px; font-weight: bold; color: #fff; }
+    .slide-13 .subtitle { font-size: 16px; color: #fff; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 e-Granting System สสส. - Demo Preview (13 Slides)</h1>
+
+    <div class="slides-grid">
+      <!-- Slide 1: Title -->
+      <div class="slide slide-1">
+        <span class="slide-number">1</span>
+        <div class="slide-content">
+          <div class="title">ระบบ e-Granting สสส.</div>
+          <div class="subtitle">ระบบสารสนเทศสนับสนุนโครงการภาคีเครือข่าย</div>
+          <div class="footer">ข้อสอบตำแหน่ง PM IT</div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Overview -->
+      <div class="slide slide-2">
+        <span class="slide-number">2</span>
+        <div class="header">1. OVERVIEW (ภาพรวมระบบ)</div>
+        <div class="content">
+          <div class="left">
+            <h3>วัตถุประสงค์</h3>
+            <p>บริหารจัดการโครงการครบวงจร</p>
+            <h3 style="margin-top:8px;">ข้อมูลโครงการ</h3>
+            <p><b>ระยะเวลา:</b> 9-12 เดือน</p>
+            <p><b>งบประมาณ:</b> 15-25 ล้านบาท</p>
+            <p><b>วิธีการ:</b> Agile</p>
+          </div>
+          <div class="right">
+            <h3>ผู้ใช้งานหลัก (5 กลุ่ม)</h3>
+            <table>
+              <tr><th>กลุ่ม</th><th>บทบาท</th></tr>
+              <tr><td>ภาคีเครือข่าย</td><td>ยื่นข้อเสนอ</td></tr>
+              <tr><td>นักวิชาการ</td><td>คัดกรอง</td></tr>
+              <tr><td>ผู้อนุมัติ</td><td>อนุมัติ</td></tr>
+              <tr><td>ศูนย์สัญญา</td><td>ทำสัญญา</td></tr>
+              <tr><td>กฎหมาย</td><td>ให้คำปรึกษา</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Agile -->
+      <div class="slide slide-3">
+        <span class="slide-number">3</span>
+        <div class="header">AGILE METHODOLOGY</div>
+        <div class="content">
+          <div class="sprint-cycle">
+            <div class="sprint" style="background:#DBEEF4;">Plan<br>วางแผน</div>
+            <span class="arrow">→</span>
+            <div class="sprint" style="background:#E2EFDA;">Develop<br>พัฒนา</div>
+            <span class="arrow">→</span>
+            <div class="sprint" style="background:#FFF2CC;">Test<br>ทดสอบ</div>
+            <span class="arrow">→</span>
+            <div class="sprint" style="background:#FCE4D6;">Review<br>ตรวจสอบ</div>
+          </div>
+          <h4>Agile Principles</h4>
+          <ul>
+            <li>Iterative Development</li>
+            <li>Customer Collaboration</li>
+            <li>Responding to Change</li>
+            <li>Working Software</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Slide 4: Workflow -->
+      <div class="slide slide-4">
+        <span class="slide-number">4</span>
+        <div class="header">2. WORKFLOW (กระบวนการทำงาน)</div>
+        <div class="phases">
+          <div class="phase" style="background:#DBEEF4;"><div class="phase-title">Phase 1</div>พัฒนาข้อเสนอ</div>
+          <div class="phase" style="background:#E2EFDA;"><div class="phase-title">Phase 2</div>อนุมัติโครงการ</div>
+          <div class="phase" style="background:#FFF2CC;"><div class="phase-title">Phase 3-4</div>ดำเนินการ+เบิกจ่าย</div>
+          <div class="phase" style="background:#FCE4D6;"><div class="phase-title">Phase 5</div>ปิดโครงการ</div>
+        </div>
+        <div class="details">
+          <div class="detail"><h4 style="color:#2E75B6;">Phase 1</h4><ul><li>ยื่นข้อเสนอ</li><li>คัดกรอง</li></ul></div>
+          <div class="detail"><h4 style="color:#70AD47;">Phase 2</h4><ul><li>กลั่นกรอง</li><li>ทำสัญญา</li></ul></div>
+          <div class="detail"><h4 style="color:#ED7D31;">Phase 3-4</h4><ul><li>เบิกเงิน</li><li>ส่งรายงาน</li></ul></div>
+          <div class="detail"><h4 style="color:#C00000;">Phase 5</h4><ul><li>รายงานสรุป</li><li>ปิดโครงการ</li></ul></div>
+        </div>
+      </div>
+
+      <!-- Slide 5: Modules -->
+      <div class="slide slide-5">
+        <span class="slide-number">5</span>
+        <div class="header">3. KEY MODULES (โมดูลหลัก)</div>
+        <table>
+          <tr><th>#</th><th>โมดูล</th><th>ฟังก์ชันหลัก</th></tr>
+          <tr><td>1</td><td>ข้อเสนอโครงการ</td><td>สร้าง/แก้ไข/ยื่น, แนบไฟล์</td></tr>
+          <tr><td>2</td><td>คัดกรอง/กลั่นกรอง</td><td>ตรวจคุณสมบัติ, กำหนดงวด</td></tr>
+          <tr><td>3</td><td>อนุมัติโครงการ</td><td>พิจารณา, บันทึกเงื่อนไข</td></tr>
+          <tr><td>4</td><td>สัญญา</td><td>ตรวจเอกสาร, ลงนาม</td></tr>
+          <tr><td>5</td><td>เบิกจ่าย/ส่งงาน</td><td>ขอเบิกงวด, รายงาน</td></tr>
+          <tr><td>6</td><td>ปิดโครงการ</td><td>รายงานสรุป, ตรวจครุภัณฑ์</td></tr>
+          <tr><td>7</td><td>Dashboard/KPI</td><td>สถานะ, แจ้งเตือน</td></tr>
+          <tr><td>8</td><td>รายงาน</td><td>Export Excel/PDF</td></tr>
+        </table>
+      </div>
+
+      <!-- Slide 6: Data Entities -->
+      <div class="slide slide-6">
+        <span class="slide-number">6</span>
+        <div class="header">4. DATA ENTITIES (โครงสร้างข้อมูล)</div>
+        <div class="content">
+          <div class="diagram">
+            <div class="entities">
+              <div class="entity" style="background:#DBEEF4;">Project<br>(โครงการ)</div>
+              <div class="entity" style="background:#E2EFDA;">User<br>(ผู้ใช้)</div>
+              <div class="entity" style="background:#FFF2CC;">Contract<br>(สัญญา)</div>
+            </div>
+            <div class="sub-entities">
+              <div class="sub-entity">Milestone (งวดงาน)</div>
+              <div class="sub-entity">Payment (การเบิก)</div>
+              <div class="sub-entity">Document (เอกสาร)</div>
+              <div class="sub-entity">Role (บทบาท)</div>
+            </div>
+          </div>
+          <div class="relations">
+            <table>
+              <tr><th>Entity</th><th>Relations</th></tr>
+              <tr><td><b>Project</b></td><td>1:N → Milestone, Payment, Document</td></tr>
+              <tr><td><b>User</b></td><td>N:1 → Role</td></tr>
+              <tr><td><b>Contract</b></td><td>1:1 → Project</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: RBAC -->
+      <div class="slide slide-7">
+        <span class="slide-number">7</span>
+        <div class="header">5. RBAC (สิทธิ์การเข้าถึง)</div>
+        <div class="legend">✓ = เข้าถึงได้ | ○ = ดูอย่างเดียว | - = ไม่มีสิทธิ์</div>
+        <table>
+          <tr><th>บทบาท</th><th>ข้อเสนอ</th><th>คัดกรอง</th><th>อนุมัติ</th><th>สัญญา</th><th>เบิกจ่าย</th></tr>
+          <tr><td><b>ภาคี</b></td><td class="check">✓</td><td class="view">○</td><td class="view">○</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td><b>นักวิชาการ</b></td><td class="check">✓</td><td class="check">✓</td><td class="view">○</td><td class="view">○</td><td class="check">✓</td></tr>
+          <tr><td><b>ผู้อนุมัติ</b></td><td class="view">○</td><td class="view">○</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          <tr><td><b>ศูนย์สัญญา</b></td><td>-</td><td>-</td><td>-</td><td class="check">✓</td><td>-</td></tr>
+          <tr><td><b>กฎหมาย</b></td><td class="view">○</td><td class="view">○</td><td class="view">○</td><td class="view">○</td><td class="view">○</td></tr>
+        </table>
+      </div>
+
+      <!-- Slide 8: Architecture -->
+      <div class="slide slide-8">
+        <span class="slide-number">8</span>
+        <div class="header">6. ARCHITECTURE (สถาปัตยกรรม)</div>
+        <div class="content">
+          <div class="layers">
+            <div class="layer" style="background:#DBEEF4;"><span class="layer-name">Layer 1: Frontend</span> - React/Vue</div>
+            <div class="layer" style="background:#E2EFDA;"><span class="layer-name">Layer 2: API Gateway</span> - Auth, Rate Limit</div>
+            <div class="layer" style="background:#FFF2CC;"><span class="layer-name">Layer 3: Business Logic</span> - Microservices</div>
+            <div class="layer" style="background:#FCE4D6;"><span class="layer-name">Layer 4: Database</span> - PostgreSQL, S3</div>
+            <div class="layer" style="background:#E6E0EC;"><span class="layer-name">Layer 5: Integration</span> - GFMIS, e-GP, SSO</div>
+          </div>
+          <div class="external">
+            <h4>External Systems</h4>
+            <p><b>GFMIS</b> - ระบบการเงินภาครัฐ</p>
+            <p><b>e-GP</b> - ระบบจัดซื้อจัดจ้าง</p>
+            <p><b>SSO</b> - Single Sign-On</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 9: KPI -->
+      <div class="slide slide-9">
+        <span class="slide-number">9</span>
+        <div class="header">7. KPI & METRICS (ตัวชี้วัด)</div>
+        <div class="content">
+          <div>
+            <h4>Process KPIs</h4>
+            <table>
+              <tr><th>ตัวชี้วัด</th><th>เป้าหมาย</th></tr>
+              <tr><td>Time to Approve</td><td>≤ 30 วัน</td></tr>
+              <tr><td>Time to Pay</td><td>≤ 15 วัน</td></tr>
+              <tr><td>First-time Approval</td><td>≥ 70%</td></tr>
+            </table>
+          </div>
+          <div>
+            <h4>System KPIs</h4>
+            <table>
+              <tr><th>ตัวชี้วัด</th><th>เป้าหมาย</th></tr>
+              <tr><td>System Uptime</td><td>≥ 99.5%</td></tr>
+              <tr><td>Response Time</td><td>≤ 3 วินาที</td></tr>
+              <tr><td>User Satisfaction</td><td>≥ 4.0/5.0</td></tr>
+            </table>
+          </div>
+          <div class="full-width">
+            <h4>Business KPIs</h4>
+            <table>
+              <tr><th>ตัวชี้วัด</th><th>เป้าหมาย</th></tr>
+              <tr><td>Paper Reduction</td><td>≥ 80%</td></tr>
+              <tr><td>User Adoption Rate</td><td>≥ 90%</td></tr>
+              <tr><td>Cost Savings</td><td>≥ 20%</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 10: Roadmap -->
+      <div class="slide slide-10">
+        <span class="slide-number">10</span>
+        <div class="header">8. IMPLEMENTATION ROADMAP</div>
+        <div class="content">
+          <div class="timeline">
+            <div class="month">1</div><div class="month">2</div><div class="month">3</div><div class="month">4</div>
+            <div class="month">5</div><div class="month">6</div><div class="month">7</div><div class="month">8</div>
+            <div class="month">9</div><div class="month">10</div><div class="month">11</div><div class="month">12</div>
+          </div>
+          <div class="phases">
+            <div class="phase-row"><span class="phase-name">Requirements & Design</span><div class="bar" style="width:60px;background:#DBEEF4;margin-left:0;"></div></div>
+            <div class="phase-row"><span class="phase-name">MVP Development</span><div class="bar" style="width:90px;background:#E2EFDA;margin-left:30px;"></div></div>
+            <div class="phase-row"><span class="phase-name">Core Modules</span><div class="bar" style="width:120px;background:#FFF2CC;margin-left:90px;"></div></div>
+            <div class="phase-row"><span class="phase-name">Integration</span><div class="bar" style="width:90px;background:#FCE4D6;margin-left:180px;"></div></div>
+            <div class="phase-row"><span class="phase-name">UAT & Training</span><div class="bar" style="width:60px;background:#E6E0EC;margin-left:240px;"></div></div>
+            <div class="phase-row"><span class="phase-name">Go-Live & Support</span><div class="bar" style="width:60px;background:#C8E6C9;margin-left:300px;"></div></div>
+          </div>
+          <div class="milestones">▲ M1: MVP (เดือน 3) | ▲ M2: Core Complete (เดือน 6) | ▲ M3: UAT (เดือน 10) | ▲ M4: Go-Live (เดือน 12)</div>
+        </div>
+      </div>
+
+      <!-- Slide 11: Risks -->
+      <div class="slide slide-11">
+        <span class="slide-number">11</span>
+        <div class="header">9. RISKS & MITIGATION (ความเสี่ยง)</div>
+        <table>
+          <tr><th>ความเสี่ยง</th><th>ระดับ</th><th>แนวทางแก้ไข</th></tr>
+          <tr><td>User Adoption ต่ำ</td><td class="high">สูง</td><td>อบรมผู้ใช้, User Manual, Help Desk</td></tr>
+          <tr><td>Integration ล้มเหลว</td><td class="high">สูง</td><td>PoC ก่อน, Testing กับ GFMIS/e-GP</td></tr>
+          <tr><td>Security/PDPA</td><td class="medium">ปานกลาง</td><td>Security Audit, Encryption, MFA</td></tr>
+          <tr><td>Timeline ล่าช้า</td><td class="medium">ปานกลาง</td><td>Agile Sprint, Weekly review</td></tr>
+          <tr><td>Budget เกิน</td><td class="low">ต่ำ</td><td>Phased approach, MVP first</td></tr>
+        </table>
+      </div>
+
+      <!-- Slide 12: Success Factors -->
+      <div class="slide slide-12">
+        <span class="slide-number">12</span>
+        <div class="header">10. SUCCESS FACTORS (ปัจจัยสำเร็จ)</div>
+        <div class="factors">
+          <div class="factor" style="background:#E2EFDA;"><h4>User-Friendly</h4><ul><li>UI/UX ใช้งานง่าย</li><li>ลดภาระเอกสาร</li><li>Mobile responsive</li></ul></div>
+          <div class="factor" style="background:#DBEEF4;"><h4>Transparency</h4><ul><li>Real-time tracking</li><li>Notification</li><li>Audit trail</li></ul></div>
+          <div class="factor" style="background:#FFF2CC;"><h4>Automation</h4><ul><li>Auto-notification</li><li>Auto-calculation</li><li>Workflow engine</li></ul></div>
+          <div class="factor" style="background:#FCE4D6;"><h4>Security</h4><ul><li>PDPA compliance</li><li>MFA</li><li>Encryption</li></ul></div>
+        </div>
+      </div>
+
+      <!-- Slide 13: Thank You -->
+      <div class="slide slide-13">
+        <span class="slide-number">13</span>
+        <div style="text-align:center;">
+          <div class="title">ขอบคุณ</div>
+          <div class="subtitle">ระบบ e-Granting สสส.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
