@@ -1,0 +1,155 @@
+================================================================================
+                        PLAYWRIGHT MCP - QUICK SUMMARY
+                              Browser Automation
+================================================================================
+
+## WHAT IS IT?
+================================================================================
+
+MCP server โดย Microsoft สำหรับ browser automation
+ใช้ accessibility snapshots แทน screenshots — เร็ว, แม่นยำ, ประหยัด tokens
+
+Key: ไม่ต้องใช้ vision model — ทำงานกับ structured data
+
+
+## INSTALL
+================================================================================
+
+claude mcp add playwright npx @playwright/mcp@latest
+
+
+## TOOLS (22 ตัว)
+================================================================================
+
+NAVIGATION
+├── browser_navigate          → ไปหน้าที่ต้องการ
+└── browser_navigate_back     → กลับหน้าก่อน
+
+INTERACTION
+├── browser_click             → คลิก element
+├── browser_type              → พิมพ์ข้อความ
+├── browser_press_key         → กดคีย์ (Enter, Arrow, etc.)
+├── browser_hover             → เลื่อนเมาส์ไปวาง
+└── browser_drag              → ลากวาง
+
+FORMS
+├── browser_fill_form         → กรอกหลาย field พร้อมกัน
+├── browser_select_option     → เลือก dropdown
+└── browser_file_upload       → อัพโหลดไฟล์
+
+INSPECTION
+├── browser_snapshot          → ดูโครงสร้างหน้า (ใช้บ่อยสุด!)
+├── browser_take_screenshot   → ถ่ายรูปหน้าจอ
+├── browser_console_messages  → ดู console log
+└── browser_network_requests  → ดู network requests
+
+EVALUATION
+├── browser_evaluate          → รัน JavaScript
+└── browser_run_code          → รัน Playwright code เต็มรูปแบบ
+
+TAB & WINDOW
+├── browser_tabs              → จัดการ tabs (list/new/close/select)
+├── browser_resize            → ปรับขนาด window
+└── browser_close             → ปิด browser
+
+UTILITY
+├── browser_wait_for          → รอจนเงื่อนไขเป็นจริง
+├── browser_handle_dialog     → จัดการ alert/confirm
+└── browser_install           → ติดตั้ง browser
+
+
+## USAGE PATTERN
+================================================================================
+
+1. SNAPSHOT ก่อนเสมอ
+   ┌─────────────────────────────────────────────────────┐
+   │  browser_snapshot: {}                               │
+   │  → ได้ accessibility tree + element refs           │
+   └─────────────────────────────────────────────────────┘
+
+2. ใช้ ref จาก snapshot
+   ┌─────────────────────────────────────────────────────┐
+   │  browser_click: {                                   │
+   │    "ref": "button#submit",                          │
+   │    "element": "Submit button"                       │
+   │  }                                                  │
+   └─────────────────────────────────────────────────────┘
+
+3. Type และ submit
+   ┌─────────────────────────────────────────────────────┐
+   │  browser_type: {                                    │
+   │    "ref": "input#search",                           │
+   │    "text": "query",                                 │
+   │    "submit": true                                   │
+   │  }                                                  │
+   └─────────────────────────────────────────────────────┘
+
+
+## EXAMPLES
+================================================================================
+
+### Navigate + Click
+browser_navigate: { "url": "https://example.com" }
+browser_snapshot: {}
+browser_click: { "ref": "button#login", "element": "Login button" }
+
+### Fill Form
+browser_fill_form: {
+  "fields": [
+    { "name": "Email", "type": "textbox", "ref": "input#email", "value": "user@example.com" },
+    { "name": "Password", "type": "textbox", "ref": "input#password", "value": "secret" },
+    { "name": "Remember", "type": "checkbox", "ref": "input#remember", "value": "true" }
+  ]
+}
+
+### Screenshot
+browser_take_screenshot: { "type": "png", "fullPage": true, "filename": "page.png" }
+
+### Run JavaScript
+browser_evaluate: { "function": "() => document.title" }
+
+### Wait for Content
+browser_wait_for: { "text": "Loading complete" }
+browser_wait_for: { "textGone": "Loading..." }
+browser_wait_for: { "time": 2 }
+
+
+## CONFIG OPTIONS
+================================================================================
+
+--headless              → ไม่แสดง GUI
+--browser <name>        → chromium, firefox, webkit, msedge
+--viewport-size <WxH>   → เช่น "1280x720"
+--device <name>         → เช่น "iPhone 15"
+--user-data-dir <path>  → เก็บ session (login persistence)
+--storage-state <path>  → Load cookies
+--caps <list>           → vision, pdf, testing, tracing
+
+
+## BEST PRACTICES
+================================================================================
+
+✅ DO
+- ใช้ browser_snapshot ก่อน interact
+- ใช้ refs จาก snapshot
+- ใช้ browser_fill_form สำหรับหลาย fields
+- ตั้ง timeout ให้เหมาะสม
+
+❌ DON'T
+- ไม่ต้อง screenshot ถ้าแค่ต้องการ interact
+- ไม่เดา refs — ดูจาก snapshot
+
+
+## TROUBLESHOOTING
+================================================================================
+
+Browser not installed   → browser_install
+Element not found       → browser_snapshot ก่อน
+Timeouts               → ปรับ --timeout-action / --timeout-navigation
+Login หาย              → ใช้ --user-data-dir
+
+
+================================================================================
+                    GitHub: microsoft/playwright-mcp
+                    Docs: https://playwright.dev
+================================================================================

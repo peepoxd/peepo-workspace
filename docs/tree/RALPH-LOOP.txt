@@ -1,0 +1,181 @@
+================================================================================
+                        RALPH LOOP - QUICK SUMMARY
+                      Self-Referential AI Iteration
+================================================================================
+
+## WHAT IS IT?
+================================================================================
+
+"Ralph Wiggum technique" — ให้ Claude วนทำงานซ้ำจนกว่าจะสำเร็จ
+ใช้ Stop hook ดักจับเมื่อ Claude พยายามจบ → ส่ง prompt เดิมกลับไปใหม่
+
+Key: Claude เห็นงานก่อนหน้าในไฟล์ + git history → iterate จนสำเร็จ
+
+
+## HOW IT WORKS
+================================================================================
+
+    ┌──────────────────────────────────────────────────────┐
+    │  /ralph-loop "Build API" --completion-promise "DONE" │
+    └──────────────────────────┬───────────────────────────┘
+                               │
+                               ▼
+    ┌──────────────────────────────────────────────────────┐
+    │  Iteration 1: สร้างไฟล์, เขียน code                   │
+    │  → พยายามจบ → Stop hook ดักจับ                       │
+    └──────────────────────────┬───────────────────────────┘
+                               │
+                               ▼
+    ┌──────────────────────────────────────────────────────┐
+    │  Iteration 2: เห็นงานก่อนหน้า → แก้ไข, ปรับปรุง       │
+    │  → พยายามจบ → Stop hook ดักจับ                       │
+    └──────────────────────────┬───────────────────────────┘
+                               │
+                               ▼
+    ┌──────────────────────────────────────────────────────┐
+    │  Iteration N: งานสำเร็จ!                              │
+    │  → Output: <promise>DONE</promise>                   │
+    │  → Loop จบ ✅                                        │
+    └──────────────────────────────────────────────────────┘
+
+
+## COMMANDS
+================================================================================
+
+/ralph-loop "<PROMPT>" [OPTIONS]
+├── --max-iterations <N>        → หยุดหลัง N รอบ (safety!)
+└── --completion-promise "<X>"  → ข้อความที่บอกว่าสำเร็จ
+
+/cancel-ralph
+└── ยกเลิก loop ทันที
+
+/help
+└── แสดงวิธีใช้
+
+
+## EXAMPLES
+================================================================================
+
+### Basic
+/ralph-loop "Fix the login bug" --max-iterations 10
+
+### With Promise
+/ralph-loop "Build todo API with tests" \
+  --completion-promise "ALL_TESTS_PASS" \
+  --max-iterations 20
+
+### TDD Pattern
+/ralph-loop "Implement feature X using TDD:
+1. Write failing tests
+2. Implement minimal code
+3. Run tests
+4. Fix failures
+5. Repeat until all tests pass" \
+  --completion-promise "ALL_TESTS_PASS" \
+  --max-iterations 25
+
+
+## COMPLETION PROMISE
+================================================================================
+
+เมื่องานสำเร็จ Claude จะ output:
+
+    <promise>YOUR_PROMISE_TEXT</promise>
+
+Rules:
+- ต้อง match EXACTLY กับ --completion-promise
+- Case-sensitive
+- Output เมื่อเป็นจริงเท่านั้น!
+
+
+## STATE FILE
+================================================================================
+
+เก็บที่: .claude/ralph-loop.local.md
+
+---
+active: true
+iteration: 5
+max_iterations: 20
+completion_promise: "DONE"
+started_at: "2026-01-30T14:22:15Z"
+---
+
+Original prompt text here...
+
+
+## SELF-REFERENCE MECHANISM
+================================================================================
+
+Ralph ไม่ได้ส่ง output กลับเป็น input!
+
+แต่:
+1. Prompt เดิมซ้ำทุกรอบ
+2. งานก่อนหน้าอยู่ในไฟล์
+3. Git history แสดง attempts
+4. Claude อ่านไฟล์ → เห็นงานก่อนหน้า → iterate ต่อ
+
+
+## WHEN TO USE
+================================================================================
+
+✅ GOOD FIT
+- งานที่มี success criteria ชัดเจน
+- Test-driven development
+- Iterative bug fixing
+- Greenfield projects
+- งานที่ verify ได้อัตโนมัติ (tests, linters)
+
+❌ NOT RECOMMENDED
+- งานต้องการ human judgment
+- One-shot operations
+- Success criteria คลุมเครือ
+- Interactive design decisions
+
+
+## SAFETY
+================================================================================
+
+⚠️ ALWAYS USE --max-iterations!
+
+# ✅ DO
+/ralph-loop "task" --max-iterations 20
+
+# ❌ DON'T (runs forever!)
+/ralph-loop "task"
+
+
+## EXIT METHODS
+================================================================================
+
+1. Reach max iterations     → Auto-stop
+2. Output completion promise → When TRUE
+3. /cancel-ralph            → Emergency exit
+
+
+## TROUBLESHOOTING
+================================================================================
+
+Loop won't stop
+└── Promise text ไม่ match → ตรวจ case sensitivity
+
+State file corrupted
+└── rm .claude/ralph-loop.local.md → start fresh
+
+Loop runs infinitely
+└── ไม่มี --max-iterations → ใช้ /cancel-ralph
+
+
+## QUICK TIPS
+================================================================================
+
+- เริ่มด้วย --max-iterations 10 เพื่อทดสอบ prompt
+- ใช้ completion promise ที่วัดได้ชัดเจน
+- ดู git history เพื่อเห็น iteration progress
+- เหมาะกับงาน repetitive และ testable
+
+
+================================================================================
+                 Original: https://ghuntley.com/ralph/
+         Philosophy: "Deterministically bad in an undeterministic world"
+================================================================================

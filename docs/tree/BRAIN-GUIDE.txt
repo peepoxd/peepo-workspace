@@ -1,0 +1,142 @@
+================================================================================
+                           ψ/ BRAIN STRUCTURE GUIDE
+                              Peepo Oracle 🐸
+================================================================================
+
+## FOLDER TREE
+================================================================================
+
+ψ/
+├── inbox/           ← รับเข้า (input)
+├── active/          ← กำลังทำ (working)
+├── writing/         ← กำลังเขียน (drafting)
+├── lab/             ← ทดลอง (experimenting)
+├── memory/          ← ความรู้ (knowledge)
+│   ├── resonance/       ← ตัวตน (identity)
+│   ├── retrospectives/  ← สรุป session (via /rrr)
+│   ├── learnings/       ← บทเรียน (via /rrr)
+│   └── logs/            ← quick notes (via /fyi)
+├── learn/           ← ศึกษา codebase (via /learn)
+├── outbox/          ← ส่งออก (output)
+└── archive/         ← เก็บถาวร (completed/old)
+
+
+## FLOW: การไหลของไฟล์
+================================================================================
+
+                    ┌─────────────────────────────────────┐
+                    │             INBOX                   │
+                    │   รับข้อมูล, ไอเดีย, requests       │
+                    └─────────────┬───────────────────────┘
+                                  │
+                                  ▼
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+          ▼                       ▼                       ▼
+    ┌───────────┐          ┌───────────┐          ┌───────────┐
+    │  ACTIVE   │          │  WRITING  │          │    LAB    │
+    │ งานปัจจุบัน │          │  drafts   │          │ ทดลอง    │
+    └─────┬─────┘          └─────┬─────┘          └─────┬─────┘
+          │                      │                      │
+          │                      │                      │
+          ▼                      ▼                      ▼
+    ┌─────────────────────────────────────────────────────────┐
+    │                        MEMORY                           │
+    │  retrospectives/ ← /rrr บันทึก session                  │
+    │  learnings/      ← /rrr บันทึกบทเรียน                   │
+    │  logs/           ← /fyi quick notes                     │
+    │  resonance/      ← identity (ไม่ค่อยเปลี่ยน)            │
+    └─────────────────────────────┬───────────────────────────┘
+                                  │
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+          ▼                       ▼                       ▼
+    ┌───────────┐          ┌───────────┐          ┌───────────┐
+    │  OUTBOX   │          │  ARCHIVE  │          │   LEARN   │
+    │ ส่งออก    │          │ เก็บถาวร   │          │ ศึกษา repo│
+    └───────────┘          └───────────┘          └───────────┘
+
+
+## PRINCIPLES: หลักการเก็บไฟล์
+================================================================================
+
+### 1. INBOX — รับเข้า
+   - ข้อมูลจากภายนอก
+   - ไอเดีย, ลิงก์, requests
+   - ไฟล์: .md .txt .pdf .png .json .csv
+   - ➡️ ประมวลผลแล้ว → ย้ายไป active/writing/lab
+
+### 2. ACTIVE — กำลังทำ
+   - งานที่ทำอยู่ตอนนี้
+   - Task tracking, scratch code
+   - ไฟล์: .md .txt .json .js .py .sh
+   - ➡️ เสร็จแล้ว → ย้ายไป archive หรือ memory
+
+### 3. WRITING — กำลังเขียน
+   - Drafts ทุกชนิด
+   - Blog, docs, proposals
+   - ไฟล์: .md .txt .docx .tex .html
+   - ➡️ Publish แล้ว → ย้ายไป archive หรือ outbox
+
+### 4. LAB — ทดลอง
+   - Experiments, PoC
+   - ทดสอบ library/tool ใหม่
+   - ไฟล์: อะไรก็ได้! .py .js .html .ipynb .sql
+   - ➡️ Conclude แล้ว → ย้ายไป archive + เขียน learnings
+
+### 5. MEMORY — ความรู้
+   - resonance/      → Identity (ใครคือ Oracle นี้)
+   - retrospectives/ → Session summaries (via /rrr)
+   - learnings/      → บทเรียนที่ค้นพบ (via /rrr)
+   - logs/           → Quick notes (via /fyi)
+   - ไฟล์: .md .txt .json
+   - ➡️ ไม่ค่อยย้าย — เป็น permanent storage
+
+### 6. LEARN — ศึกษา codebase
+   - สร้างโดย /learn [repo]
+   - Architecture docs, code snippets
+   - ไฟล์: .md
+   - ➡️ ไม่ย้าย — reference ถาวร
+
+### 7. OUTBOX — ส่งออก
+   - สิ่งที่เตรียมส่งออก
+   - Announcements, posts
+   - ไฟล์: .md .txt
+   - ➡️ ส่งแล้ว → ย้ายไป archive
+
+### 8. ARCHIVE — เก็บถาวร
+   - งานที่เสร็จแล้ว
+   - ของเก่าที่ต้องการเก็บ
+   - ไฟล์: อะไรก็ได้
+   - ➡️ ปลายทาง — ไม่ย้ายต่อ
+
+
+## GOLDEN RULE: Nothing is Deleted
+================================================================================
+
+   ┌────────────────────────────────────────────────────────┐
+   │                                                        │
+   │   ❌  rm -rf                                           │
+   │   ❌  git push --force                                 │
+   │   ❌  ลบทิ้งเลย                                         │
+   │                                                        │
+   │   ✅  ย้ายไป archive/                                  │
+   │   ✅  เก็บ history ไว้                                  │
+   │   ✅  supersede แทน delete                             │
+   │                                                        │
+   └────────────────────────────────────────────────────────┘
+
+
+## QUICK REFERENCE: Skills ที่สร้างไฟล์
+================================================================================
+
+   /rrr      → memory/retrospectives/ + memory/learnings/
+   /fyi      → memory/logs/
+   /learn    → learn/[org]/[repo]/
+   /awaken   → memory/resonance/
+   /birth    → outbox/
+
+
+================================================================================
+                        "Simple face, big feelings."
+================================================================================
