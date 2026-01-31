@@ -1,0 +1,267 @@
+═══════════════════════════════════════════════════════════════════════════════
+            e-Granting Demo: Ralph-Loop + Playwright + PRP Workflow
+                    "สร้าง Demo อัตโนมัติด้วย AI"
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  INPUT: e-Granting-System.docx                                              │
+│  ├── 5 Phases: ข้อเสนอ → อนุมัติ → ดำเนินการ → เบิกจ่าย → ปิดโครงการ           │
+│  ├── 7 Modules: ข้อเสนอ, คัดกรอง, อนุมัติ, สัญญา, เบิกจ่าย, Dashboard, รายงาน  │
+│  └── 5 Roles: ภาคี, นักวิชาการ, ผู้อนุมัติ, ศูนย์สัญญา, กฎหมาย                │
+└──────────────────────────────┬──────────────────────────────────────────────┘
+                               │
+                               ▼
+═══════════════════════════════════════════════════════════════════════════════
+                        PHASE 1: PRP (Define + Plan)
+                        "Context is King - บริบทครบถ้วน"
+═══════════════════════════════════════════════════════════════════════════════
+
+/prp-prd "e-Granting Demo System"
+        │
+        ├─── สร้าง PRD
+        │    └─── .claude/PRPs/prds/e-granting-demo.prd.md
+        │         ├─── Goal: สร้าง Demo e-Granting ครบวงจร
+        │         ├─── Context: Pattern จาก docx + Architecture
+        │         └─── Validation: Playwright tests
+        │
+        ▼
+/prp-plan e-granting-demo.prd.md
+        │
+        ├─── สร้างแผนแยก Phase
+        │
+        │    ┌────────────────────────────────────────────────────────────┐
+        │    │ Phase │ Module           │ Status  │ Depends │ Parallel   │
+        │    │───────│──────────────────│─────────│─────────│────────────│
+        │    │   1   │ Project Setup    │ pending │ -       │ -          │
+        │    │   2   │ Auth + RBAC      │ pending │ 1       │ -          │
+        │    │   3   │ Proposal Module  │ pending │ 2       │ with 4     │
+        │    │   4   │ Dashboard        │ pending │ 2       │ with 3     │
+        │    │   5   │ Approval Flow    │ pending │ 3       │ -          │
+        │    │   6   │ Contract Module  │ pending │ 5       │ with 7     │
+        │    │   7   │ Payment Module   │ pending │ 5       │ with 6     │
+        │    │   8   │ Report & Export  │ pending │ 6,7     │ -          │
+        │    │   9   │ E2E Tests        │ pending │ 8       │ -          │
+        │    └────────────────────────────────────────────────────────────┘
+        │
+        └─── Output: .claude/PRPs/plans/e-granting-phase-*.plan.md
+
+═══════════════════════════════════════════════════════════════════════════════
+                    PHASE 2: RALPH LOOP (Auto-Execute)
+                    "ทำซ้ำจนกว่าจะสำเร็จ"
+═══════════════════════════════════════════════════════════════════════════════
+
+/prp-ralph e-granting-phase-1.plan.md --max-iterations 15
+        │
+        │   ┌─────────────────────────────────────────────────────────────┐
+        │   │                    RALPH LOOP                               │
+        │   │                                                             │
+        │   │    ┌──────────┐                                             │
+        │   │    │ Implement│  สร้างโค้ดตามแผน                             │
+        │   │    │ (Claude) │  - React components                        │
+        │   │    └────┬─────┘  - API endpoints                           │
+        │   │         │        - Database schema                         │
+        │   │         ▼                                                   │
+        │   │    ┌──────────┐                                             │
+        │   │    │ Validate │  ตรวจสอบอัตโนมัติ                            │
+        │   │    │          │  - Level 1: eslint, tsc                     │
+        │   │    └────┬─────┘  - Level 2: jest tests                     │
+        │   │         │        - Level 3: npm run build                  │
+        │   │    ┌────▼─────┐                                             │
+        │   │    │  Pass?   │                                             │
+        │   │    └────┬─────┘                                             │
+        │   │    Yes  │  No                                               │
+        │   │    ┌────┘  └────┐                                           │
+        │   │    │            │                                           │
+        │   │ ┌──▼──┐    ┌────▼────┐                                      │
+        │   │ │DONE!│    │  Fix    │──────┐                               │
+        │   │ └─────┘    │ (Claude)│      │                               │
+        │   │            └─────────┘      │ วนกลับ                         │
+        │   │                    ▲        │                               │
+        │   │                    └────────┘                               │
+        │   │                                                             │
+        │   └─────────────────────────────────────────────────────────────┘
+        │
+        │   State: .claude/ralph-loop.local.md
+        │   ├── iteration: 7
+        │   ├── max_iterations: 15
+        │   └── status: running
+        │
+        └─── เมื่อสำเร็จ: <promise>PHASE_1_COMPLETE</promise>
+
+═══════════════════════════════════════════════════════════════════════════════
+                    PHASE 3: PLAYWRIGHT (Demo + Test)
+                    "Browser Automation - Accessibility First"
+═══════════════════════════════════════════════════════════════════════════════
+
+ใช้ Playwright ใน 2 รูปแบบ:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  รูปแบบ A: VALIDATION ใน RALPH LOOP                                         │
+│  (ตรวจสอบระหว่างทำงาน)                                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Ralph Loop Iteration N:                                                    │
+│      │                                                                      │
+│      ├─── 1. เปิด Browser                                                   │
+│      │        browser_navigate: { url: "http://localhost:3000" }           │
+│      │                                                                      │
+│      ├─── 2. Snapshot (ดูโครงสร้างหน้า)                                     │
+│      │        browser_snapshot: {}                                          │
+│      │        → ได้ accessibility tree + element refs                      │
+│      │                                                                      │
+│      ├─── 3. Test Login Flow (ภาคี role)                                   │
+│      │        browser_fill_form:                                            │
+│      │        ├── email: "partner@test.com"                                │
+│      │        └── password: "****"                                         │
+│      │        browser_click: { ref: "button#login" }                       │
+│      │                                                                      │
+│      ├─── 4. Test Create Proposal                                          │
+│      │        browser_navigate: { url: "/proposals/new" }                  │
+│      │        browser_fill_form:                                            │
+│      │        ├── project_name: "โครงการทดสอบ"                              │
+│      │        ├── budget: "500000"                                         │
+│      │        └── duration: "6"                                            │
+│      │        browser_click: { ref: "button#submit" }                      │
+│      │                                                                      │
+│      ├─── 5. Verify Success                                                │
+│      │        browser_wait_for: { text: "บันทึกสำเร็จ" }                    │
+│      │        browser_snapshot: {} → ตรวจ state ใหม่                        │
+│      │                                                                      │
+│      └─── 6. Result                                                        │
+│           ├── Pass → ไป iteration ถัดไป                                     │
+│           └── Fail → Claude แก้โค้ด → วนใหม่                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  รูปแบบ B: DEMO RECORDING                                                   │
+│  (บันทึก Demo หลังระบบเสร็จ)                                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  /ralph-loop "Create e-Granting Demo Video" --max-iterations 5             │
+│      │                                                                      │
+│      ├─── Scenario 1: ภาคียื่นข้อเสนอ                                       │
+│      │    ├── browser_navigate → Login                                     │
+│      │    ├── browser_take_screenshot: { filename: "01-login.png" }       │
+│      │    ├── browser_fill_form → สร้างข้อเสนอ                              │
+│      │    ├── browser_take_screenshot: { filename: "02-proposal.png" }    │
+│      │    └── browser_click → ยื่นข้อเสนอ                                   │
+│      │                                                                      │
+│      ├─── Scenario 2: นักวิชาการคัดกรอง                                     │
+│      │    ├── Login as นักวิชาการ                                          │
+│      │    ├── browser_navigate → /screening                                │
+│      │    ├── browser_take_screenshot: { filename: "03-screening.png" }   │
+│      │    └── browser_click → อนุมัติคัดกรอง                                │
+│      │                                                                      │
+│      ├─── Scenario 3: ผู้อนุมัติพิจารณา                                     │
+│      │    ├── Login as ผู้อนุมัติ                                           │
+│      │    ├── browser_navigate → /approval                                 │
+│      │    ├── browser_take_screenshot: { filename: "04-approval.png" }    │
+│      │    └── browser_click → อนุมัติโครงการ                                │
+│      │                                                                      │
+│      ├─── Scenario 4: Dashboard & Reports                                  │
+│      │    ├── browser_navigate → /dashboard                                │
+│      │    ├── browser_take_screenshot: { filename: "05-dashboard.png" }   │
+│      │    └── browser_evaluate → ดึง KPI data                              │
+│      │                                                                      │
+│      └─── Output: screenshots/ + demo-script.md                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                        FULL INTEGRATION FLOW
+                        "ภาพรวมการทำงานร่วมกัน"
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   e-Granting.docx                                                           │
+│        │                                                                    │
+│        ▼                                                                    │
+│   ┌─────────┐     ┌──────────────────────────────────────────────────────┐ │
+│   │   PRP   │────▶│  1. /prp-prd → สร้าง PRD                             │ │
+│   │ (Plan)  │     │  2. /prp-plan → แบ่ง Phase + Validation Gates        │ │
+│   └─────────┘     └──────────────────────────────────────────────────────┘ │
+│        │                                                                    │
+│        │  .plan.md                                                          │
+│        ▼                                                                    │
+│   ┌─────────┐     ┌──────────────────────────────────────────────────────┐ │
+│   │  RALPH  │────▶│  3. /prp-ralph → Implement + Validate Loop           │ │
+│   │ (Loop)  │     │     - เขียนโค้ด                                       │ │
+│   └─────────┘     │     - รัน tests                                       │ │
+│        │          │     - แก้ไขถ้าไม่ผ่าน                                  │ │
+│        │          │     - วนจนกว่าจะ Pass ทุก Level                       │ │
+│        │          └──────────────────────────────────────────────────────┘ │
+│        │                         │                                          │
+│        │                         │ ใช้ Playwright ใน Validation             │
+│        │                         ▼                                          │
+│   ┌─────────┐     ┌──────────────────────────────────────────────────────┐ │
+│   │PLAYWRIGHT────▶│  4. E2E Testing ใน Ralph Loop                        │ │
+│   │ (Test)  │     │     - browser_snapshot → ตรวจ UI                      │ │
+│   └─────────┘     │     - browser_click → ทดสอบ flow                      │ │
+│        │          │     - browser_wait_for → verify results               │ │
+│        │          └──────────────────────────────────────────────────────┘ │
+│        │                                                                    │
+│        │  เมื่อระบบเสร็จ                                                     │
+│        ▼                                                                    │
+│   ┌─────────┐     ┌──────────────────────────────────────────────────────┐ │
+│   │PLAYWRIGHT────▶│  5. Demo Recording                                   │ │
+│   │ (Demo)  │     │     - Screenshot ทุก step                            │ │
+│   └─────────┘     │     - สร้าง demo script                               │ │
+│        │          │     - Export รายงาน                                    │ │
+│        │          └──────────────────────────────────────────────────────┘ │
+│        │                                                                    │
+│        ▼                                                                    │
+│   ┌─────────────────────────────────────────────────────────────────────┐  │
+│   │  OUTPUT:                                                             │  │
+│   │  ├── Working Demo (localhost:3000)                                  │  │
+│   │  ├── screenshots/01-login.png ... 05-dashboard.png                  │  │
+│   │  ├── demo-script.md (คู่มือ Demo)                                    │  │
+│   │  └── e2e-tests/ (Playwright tests)                                  │  │
+│   └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                        QUICK START COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+# Step 1: สร้าง PRD จาก docx
+/prp-prd "e-Granting Demo based on projects/e-granting/e-Granting-System.docx"
+
+# Step 2: สร้างแผน Phase 1 (Setup + Auth)
+/prp-plan .claude/PRPs/prds/e-granting-demo.prd.md --phase 1
+
+# Step 3: รัน Ralph Loop (อัตโนมัติ)
+/prp-ralph .claude/PRPs/plans/e-granting-phase-1.plan.md --max-iterations 15
+
+# Step 4: ทดสอบด้วย Playwright (manual)
+browser_navigate → http://localhost:3000
+browser_snapshot → ดู UI
+browser_fill_form → ทดสอบ form
+browser_take_screenshot → บันทึก demo
+
+═══════════════════════════════════════════════════════════════════════════════
+                        SUMMARY TABLE
+═══════════════════════════════════════════════════════════════════════════════
+
+┌────────────┬─────────────────────────┬──────────────────────────────────────┐
+│ Tool       │ บทบาท                   │ เมื่อไหร่ใช้                          │
+├────────────┼─────────────────────────┼──────────────────────────────────────┤
+│ PRP        │ Define + Plan           │ ตอนเริ่ม — สร้าง PRD และแผนงาน        │
+│ Ralph Loop │ Auto-Execute            │ ระหว่างทำ — วนจนกว่าโค้ดจะผ่าน        │
+│ Playwright │ Test + Demo             │ ใน Loop = ตรวจ E2E, หลังเสร็จ = Demo │
+└────────────┴─────────────────────────┴──────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                        [SPACE FOR ADDITIONAL DETAILS]
+═══════════════════════════════════════════════════════════════════════════════
+
+
+
+
+═══════════════════════════════════════════════════════════════════════════════
+Created: 2026-01-31
+Source: projects/e-granting/e-Granting-System.docx
+Author: Peepo Oracle
+═══════════════════════════════════════════════════════════════════════════════

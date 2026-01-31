@@ -1,0 +1,291 @@
+═══════════════════════════════════════════════════════════════════════════════
+              DEMO-GRANTING-SYSTEM - PROJECT STRUCTURE TREE
+                      Ralph Loop Iterations 1-5
+═══════════════════════════════════════════════════════════════════════════════
+
+projects/demo-granting-system/
+│
+├── docker-compose.yml              # All 6 services orchestration
+│
+├── traefik/
+│   └── traefik.yml                 # Layer 2: Load Balancer config
+│       ├── Health checks
+│       ├── Rate limiting (100 req/s)
+│       └── Circuit breaker
+│
+├── nginx/
+│   └── nginx.conf                  # Layer 3: Web Server config
+│       ├── Gzip compression
+│       ├── Static file caching (1 year)
+│       └── SPA routing
+│
+├── backend/                        # Layer 4: Application Server
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── Dockerfile
+│   └── src/
+│       ├── index.ts                # Express entry point
+│       │
+│       ├── middleware/
+│       │   ├── auth.ts             # JWT + RBAC (5 roles)
+│       │   ├── rateLimit.ts        # Rate limiting
+│       │   └── errorHandler.ts     # Graceful error handling
+│       │
+│       ├── routes/
+│       │   ├── auth.ts             # Login/Logout ✅
+│       │   ├── proposals.ts        # CRUD + Submit ✅
+│       │   ├── screening.ts        # Review flow ✅
+│       │   ├── approval.ts         # Decision flow ✅
+│       │   ├── contracts.ts        # E-signature ✅
+│       │   ├── payments.ts         # Request/Approve ✅
+│       │   ├── dashboard.ts        # KPIs ✅
+│       │   ├── reports.ts          # Export ✅
+│       │   └── files.ts            # File upload/download ✅
+│       │
+│       ├── services/
+│       │   └── fileStorage.ts      # MinIO integration
+│       │
+│       └── utils/
+│           ├── logger.ts           # Pino logging
+│           └── cache.ts            # Redis + memory fallback
+│
+├── database/                       # Layer 5b: Database
+│   ├── migrations/
+│   │   └── 001_init.sql            # Schema (7 tables + indexes)
+│   └── seeds/
+│       ├── 001_demo_users.sql      # 8 demo users
+│       └── 002_demo_proposals.sql  # 4 sample proposals
+│
+├── frontend/                       # React SPA
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── index.html
+│   ├── Dockerfile
+│   └── src/
+│       ├── main.tsx                # React entry
+│       ├── App.tsx                 # Router + Protected routes
+│       ├── index.css               # Tailwind styles
+│       │
+│       ├── hooks/
+│       │   └── useAuthStore.ts     # Zustand auth state + RBAC
+│       │
+│       ├── utils/
+│       │   └── api.ts              # Axios + interceptors
+│       │
+│       ├── components/
+│       │   └── Layout.tsx          # Sidebar + Navigation
+│       │
+│       └── pages/
+│           ├── LoginPage.tsx       # Auth + Demo users ✅
+│           ├── DashboardPage.tsx   # KPIs + Charts ✅
+│           ├── ScreeningPage.tsx   # Stub
+│           ├── ApprovalPage.tsx    # Stub
+│           ├── ContractsPage.tsx   # Stub
+│           ├── PaymentsPage.tsx    # Stub
+│           ├── ReportsPage.tsx     # Stub
+│           └── proposals/
+│               ├── ProposalsPage.tsx    # List + Table ✅
+│               └── ProposalFormPage.tsx # Create/Edit form ✅
+│
+├── tests/                          # Testing (structure ready)
+│   ├── e2e/
+│   ├── unit/
+│   └── load/
+│
+└── docs/
+
+═══════════════════════════════════════════════════════════════════════════════
+                    ARCHITECTURE LAYERS (from ByteByteGo)
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Client (Browser)                                                           │
+│      │                                                                      │
+│      ▼                                                                      │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │ Layer 2: TRAEFIK (Load Balancer/Reverse Proxy)                      │   │
+│  │ ├── Health check: /health every 10s                                 │   │
+│  │ ├── Rate limit: 100 req/s per IP                                    │   │
+│  │ ├── Circuit breaker: 5 failures → open                              │   │
+│  │ └── Ports: 80, 8080 (dashboard)                                     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│      │                                                                      │
+│      ├────────────────────┬─────────────────────────────────────────┐      │
+│      ▼                    ▼                                         │      │
+│  ┌────────────────┐  ┌────────────────────────────────────────────┐ │      │
+│  │ Layer 3: NGINX │  │ Layer 4: BACKEND (Node.js/Express)         │ │      │
+│  │ (Static Files) │  │ ├── Auth: JWT + RBAC (5 roles)             │ │      │
+│  │ ├── React SPA  │  │ ├── APIs: 9 modules                        │ │      │
+│  │ ├── Gzip       │  │ ├── Validation: Zod schemas                │ │      │
+│  │ └── Cache 1yr  │  │ └── Logging: Pino                          │ │      │
+│  └────────────────┘  └───────────────┬────────────────────────────┘ │      │
+│                                      │                              │      │
+│      ┌───────────────────────────────┼───────────────────────────┐  │      │
+│      ▼                               ▼                           ▼  │      │
+│  ┌──────────────┐  ┌──────────────────────────┐  ┌──────────────┐   │      │
+│  │ Layer 5a:    │  │ Layer 5b: POSTGRESQL     │  │ Layer 5c:    │   │      │
+│  │ REDIS        │  │ ├── 7 tables             │  │ MINIO        │   │      │
+│  │ (Cache)      │  │ ├── 11 indexes           │  │ (File Store) │   │      │
+│  │ ├── Session  │  │ ├── Audit logs           │  │ ├── 4 buckets│   │      │
+│  │ │   30min    │  │ └── Demo seeds           │  │ └── Versioned│   │      │
+│  │ ├── API 1min │  └──────────────────────────┘  └──────────────┘   │      │
+│  │ └── KPI 5min │                                                    │      │
+│  └──────────────┘                                                    │      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                         STATISTICS / สถิติ
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Metric                          │ Value                                     │
+├─────────────────────────────────┼───────────────────────────────────────────┤
+│ Total Files Created             │ 48 files                                  │
+│ Ralph Loop Iterations           │ 5 (of 8 planned)                          │
+│ Docker Services                 │ 6 (traefik, nginx, backend, redis,        │
+│                                 │    postgres, minio)                       │
+│ Backend API Routes              │ 9 modules                                 │
+│ Database Tables                 │ 7 tables + audit_logs                     │
+│ Frontend Pages                  │ 10 pages                                  │
+│ RBAC Roles                      │ 5 roles                                   │
+│ Completion                      │ ~65%                                      │
+└─────────────────────────────────┴───────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                    ENGLISH SUMMARY / สรุปภาษาอังกฤษ
+═══════════════════════════════════════════════════════════════════════════════
+
+## What Was Built (5 Iterations)
+
+**Iteration 1-2: Infrastructure & Core Backend**
+- Docker Compose with 6 services (Traefik, Nginx, Backend, Redis, PostgreSQL, MinIO)
+- Load balancer with health checks, rate limiting, circuit breaker
+- Express backend with JWT authentication and RBAC (5 roles)
+- Redis caching with TTL policies (Session 30m, API 1m, Dashboard 5m)
+
+**Iteration 3: Complete Backend APIs**
+- All 9 API modules implemented: auth, proposals, screening, approval,
+  contracts, payments, dashboard, reports, files
+- Zod validation schemas for all inputs
+- MinIO file storage service integration
+
+**Iteration 4: Database & Seeds**
+- PostgreSQL schema with 7 tables + indexes
+- Demo users (8 accounts for all 5 roles)
+- Sample proposals for testing
+
+**Iteration 5: Frontend Foundation**
+- React 18 + TypeScript + Vite + TailwindCSS
+- Zustand state management with RBAC helpers
+- Login page with demo user quick-select
+- Dashboard with KPIs and budget visualization
+- Proposals list and create form
+- Responsive sidebar navigation
+
+## Remaining Work (3 Iterations)
+
+**Iteration 6**: Complete frontend pages (Screening, Approval, Contracts, Payments)
+**Iteration 7**: File upload UI, Reports export, Polish
+**Iteration 8**: Playwright E2E tests, Load testing with k6
+
+═══════════════════════════════════════════════════════════════════════════════
+                    THAI SUMMARY / สรุปภาษาไทย
+═══════════════════════════════════════════════════════════════════════════════
+
+## สิ่งที่สร้างแล้ว (5 รอบ)
+
+**รอบ 1-2: โครงสร้างพื้นฐาน + Backend หลัก**
+- Docker Compose รวม 6 services (Traefik, Nginx, Backend, Redis, PostgreSQL, MinIO)
+- Load balancer พร้อม health checks, rate limiting, circuit breaker
+- Express backend พร้อม JWT และ RBAC (5 บทบาท)
+- Redis caching พร้อม TTL policies (Session 30นาที, API 1นาที, Dashboard 5นาที)
+
+**รอบ 3: Backend APIs ครบ**
+- API ครบ 9 โมดูล: auth, proposals, screening, approval,
+  contracts, payments, dashboard, reports, files
+- Zod validation สำหรับทุก input
+- MinIO file storage service
+
+**รอบ 4: Database + ข้อมูลทดสอบ**
+- PostgreSQL schema 7 ตาราง + indexes
+- ผู้ใช้ทดสอบ 8 บัญชี (ครบทุกบทบาท)
+- ข้อเสนอโครงการตัวอย่าง
+
+**รอบ 5: Frontend พื้นฐาน**
+- React 18 + TypeScript + Vite + TailwindCSS
+- Zustand state management พร้อม RBAC helpers
+- หน้า Login พร้อมเลือกผู้ใช้ทดสอบ
+- Dashboard แสดง KPIs และงบประมาณ
+- หน้ารายการข้อเสนอ + แบบฟอร์มสร้างใหม่
+- Sidebar navigation ตามบทบาท
+
+## งานที่เหลือ (3 รอบ)
+
+**รอบ 6**: หน้า Frontend ที่เหลือ (คัดกรอง, อนุมัติ, สัญญา, เบิกจ่าย)
+**รอบ 7**: UI อัพโหลดไฟล์, Export รายงาน, ปรับปรุง
+**รอบ 8**: Playwright E2E tests, Load testing ด้วย k6
+
+═══════════════════════════════════════════════════════════════════════════════
+                         ARCHITECTURE PRINCIPLES APPLIED
+                         หลักการสถาปัตยกรรมที่ใช้
+═══════════════════════════════════════════════════════════════════════════════
+
+From idea.txt / จาก idea.txt:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ # │ Principle                        │ Applied / การนำไปใช้                │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 1 │ Define "roles" before tech       │ ✅ Each layer has clear owner, SLA, │
+│   │ นิยามหน้าที่ก่อนเลือกเทคโนโลยี       │    and failure mode                │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 2 │ Separate traffic from logic      │ ✅ Nginx/Traefik separate from      │
+│   │ แยกรับทราฟฟิกจากประมวลผล           │    Node.js business logic          │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 3 │ LB = risk control tool           │ ✅ Health check, timeout, circuit   │
+│   │ LB = เครื่องมือควบคุมความเสี่ยง      │    breaker configured              │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 4 │ Cache with metrics               │ ✅ TTL by data type, Redis with     │
+│   │ Cache ต้องมีตัวเลขกำกับ             │    memory fallback                 │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 5 │ Protect DB from app              │ ✅ Connection pool, separate layer  │
+│   │ ปกป้อง DB จากแอป                   │                                    │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 6 │ Separate file storage            │ ✅ MinIO (S3) separate from backend │
+│   │ แยก file storage                  │                                    │
+├───┼──────────────────────────────────┼─────────────────────────────────────┤
+│ 7 │ Design for failure               │ ✅ Graceful error handling,         │
+│   │ ออกแบบรองรับการล่ม                 │    cache fallback, no cascade      │
+└───┴──────────────────────────────────┴─────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                              HOW TO RUN / วิธีรัน
+═══════════════════════════════════════════════════════════════════════════════
+
+# 1. Start all services
+cd projects/demo-granting-system
+docker compose up -d
+
+# 2. Check health
+curl http://localhost/health
+
+# 3. Access
+- Frontend: http://localhost
+- Backend API: http://localhost/api
+- Traefik Dashboard: http://localhost:8080
+- MinIO Console: http://localhost:9001
+
+# 4. Demo Login
+Email: partner@demo.com
+Password: partner123
+
+═══════════════════════════════════════════════════════════════════════════════
+Created: 2026-01-31
+Source: PRP + idea.txt + IMG_3228.jpg
+Author: Peepo Oracle
+Ralph Loop: 5/8 iterations complete (~65%)
+═══════════════════════════════════════════════════════════════════════════════

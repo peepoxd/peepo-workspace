@@ -1,0 +1,417 @@
+═══════════════════════════════════════════════════════════════════════════════
+           DEMO-GRANTING-SYSTEM - SUMMARY BY SERVER LAYERS
+                    Ralph Loop 10/10 Iterations Complete
+                    สรุปแยกตามชั้นของ Server (59 files)
+═══════════════════════════════════════════════════════════════════════════════
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         LAYER 1: DNS SERVER                                 │
+│                         ชั้นที่ 1: DNS                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Resolves domain name to IP address                                   │
+│  บทบาท: แปลงชื่อโดเมนเป็น IP                                                 │
+│                                                                             │
+│  Implementation: ใช้ Docker network + /etc/hosts                            │
+│  - Service names resolve automatically in Docker network                    │
+│  - localhost → 127.0.0.1 for development                                   │
+│                                                                             │
+│  Files: (Handled by Docker)                                                 │
+│  └── docker-compose.yml (network: dgs-network)                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LAYER 2: LOAD BALANCER / REVERSE PROXY                   │
+│                    ชั้นที่ 2: Load Balancer                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Distributes requests, TLS termination, rate limiting                │
+│  บทบาท: กระจายโหลด, ตัด TLS, จำกัดอัตราการเรียก                              │
+│                                                                             │
+│  Technology: Traefik v2.10                                                 │
+│  Ports: 80 (web), 8080 (dashboard)                                         │
+│                                                                             │
+│  Features Implemented:                                                      │
+│  ├── Health check: every 10s                                               │
+│  ├── Rate limit: 100 req/s per IP                                          │
+│  ├── Circuit breaker: 5 failures → open                                    │
+│  ├── Retry: 3 attempts                                                     │
+│  └── Access logging: JSON format                                           │
+│                                                                             │
+│  Files (2):                                                                 │
+│  ├── docker-compose.yml          → Service definition                      │
+│  └── traefik/                                                              │
+│      └── traefik.yml             → Rate limit, circuit breaker config      │
+│                                                                             │
+│  Principle Applied: "LB = เครื่องมือควบคุมความเสี่ยงของการเปลี่ยนแปลง"         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         LAYER 3: WEB SERVER                                 │
+│                         ชั้นที่ 3: Web Server                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Delivers static files, compression, caching                         │
+│  บทบาท: ส่ง static files, บีบอัด, cache                                     │
+│                                                                             │
+│  Technology: Nginx Alpine                                                  │
+│  Serves: React SPA (frontend/dist)                                         │
+│                                                                             │
+│  Features Implemented:                                                      │
+│  ├── Gzip compression: level 6                                             │
+│  ├── Static cache: 1 year (js, css, images)                                │
+│  ├── HTML: no-cache (SPA shell)                                            │
+│  ├── SPA routing: try_files → /index.html                                  │
+│  └── Security headers: X-Frame-Options, X-Content-Type-Options             │
+│                                                                             │
+│  Files (2):                                                                 │
+│  ├── docker-compose.yml          → Service definition                      │
+│  └── nginx/                                                                │
+│      └── nginx.conf              → Compression, caching, routing           │
+│                                                                             │
+│  Principle Applied: "แยก static จาก dynamic"                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      LAYER 4: APPLICATION SERVER                            │
+│                      ชั้นที่ 4: Application Server                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Business logic ONLY (stateless)                                     │
+│  บทบาท: ประมวลผล business logic เท่านั้น                                     │
+│                                                                             │
+│  Technology: Node.js + Express + TypeScript                                │
+│  Port: 3000                                                                │
+│                                                                             │
+│  API Modules (9):                                                           │
+│  ├── /api/auth         → Login, Logout, JWT tokens                         │
+│  ├── /api/proposals    → CRUD + Submit workflow                            │
+│  ├── /api/screening    → Review checklist                                  │
+│  ├── /api/approval     → Decision + conditions                             │
+│  ├── /api/contracts    → E-signature flow                                  │
+│  ├── /api/payments     → Request + approve disbursements                   │
+│  ├── /api/dashboard    → KPIs (cached 5min)                                │
+│  ├── /api/reports      → Export list                                       │
+│  └── /api/files        → MinIO integration                                 │
+│                                                                             │
+│  RBAC (5 Roles):                                                           │
+│  ├── partner         → ภาคีเครือข่าย (create proposals, request payments)   │
+│  ├── academic        → นักวิชาการ (screening)                               │
+│  ├── approver        → ผู้อนุมัติ (approve everything)                       │
+│  ├── contract_center → ศูนย์สัญญา (manage contracts)                        │
+│  └── legal           → กฎหมาย (review payments)                             │
+│                                                                             │
+│  Files (18):                                                                │
+│  backend/                                                                   │
+│  ├── package.json                                                          │
+│  ├── tsconfig.json                                                         │
+│  ├── Dockerfile                                                            │
+│  └── src/                                                                  │
+│      ├── index.ts                → Express server entry                    │
+│      ├── middleware/                                                       │
+│      │   ├── auth.ts             → JWT + RBAC (5 roles)                    │
+│      │   ├── rateLimit.ts        → 100 req/min per IP                      │
+│      │   └── errorHandler.ts     → Graceful error handling                 │
+│      ├── routes/                                                           │
+│      │   ├── auth.ts             → Login/Logout                            │
+│      │   ├── proposals.ts        → CRUD + Submit                           │
+│      │   ├── screening.ts        → Review checklist                        │
+│      │   ├── approval.ts         → Decision flow                           │
+│      │   ├── contracts.ts        → E-signature                             │
+│      │   ├── payments.ts         → Request/Approve                         │
+│      │   ├── dashboard.ts        → KPIs                                    │
+│      │   ├── reports.ts          → Export                                  │
+│      │   └── files.ts            → Upload/Download                         │
+│      ├── services/                                                         │
+│      │   └── fileStorage.ts      → MinIO client                            │
+│      └── utils/                                                            │
+│          ├── logger.ts           → Pino logging                            │
+│          └── cache.ts            → Redis + memory fallback                 │
+│                                                                             │
+│  Principle Applied: "แยกรับทราฟฟิกจากประมวลผลธุรกิจ"                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        LAYER 5a: CACHE SERVER                               │
+│                        ชั้นที่ 5a: Cache Server (Redis)                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: get/set with TTL, session storage                                   │
+│  บทบาท: เก็บ cache พร้อม TTL, เก็บ session                                   │
+│                                                                             │
+│  Technology: Redis 7 Alpine                                                │
+│  Port: 6379                                                                │
+│                                                                             │
+│  Cache Policies (TTL):                                                      │
+│  ├── Session: 30 minutes                                                   │
+│  ├── Dashboard KPIs: 5 minutes                                             │
+│  ├── API Lists: 1 minute                                                   │
+│  └── Target Hit Ratio: 80%                                                 │
+│                                                                             │
+│  Features:                                                                  │
+│  ├── Memory fallback if Redis unavailable                                  │
+│  ├── Pattern-based invalidation (cacheDel 'proposals:*')                   │
+│  └── AOF persistence enabled                                               │
+│                                                                             │
+│  Files (2):                                                                 │
+│  ├── docker-compose.yml          → Service definition                      │
+│  └── backend/src/utils/cache.ts  → Redis client + fallback                 │
+│                                                                             │
+│  Principle Applied: "Cache ต้องมีตัวเลขกำกับ ไม่ใช่ความเชื่อ"                  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       LAYER 5b: DATABASE SERVER                             │
+│                       ชั้นที่ 5b: Database Server (PostgreSQL)               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Read/write persistent data                                          │
+│  บทบาท: อ่าน/เขียนข้อมูลถาวร                                                 │
+│                                                                             │
+│  Technology: PostgreSQL 15 Alpine                                          │
+│  Port: 5432                                                                │
+│                                                                             │
+│  Tables (8):                                                                │
+│  ├── users           → 8 columns (id, email, password_hash, role, ...)     │
+│  ├── proposals       → 11 columns (project details, status, timestamps)    │
+│  ├── screenings      → 9 columns (checklist, recommendation)               │
+│  ├── approvals       → 8 columns (decision, conditions, budget)            │
+│  ├── contracts       → 11 columns (dates, installments, signatures)        │
+│  ├── payments        → 11 columns (amount, status, timestamps)             │
+│  ├── files           → 10 columns (metadata, MinIO reference)              │
+│  └── audit_logs      → 8 columns (user, action, old/new values)            │
+│                                                                             │
+│  Indexes (11):                                                              │
+│  ├── idx_proposals_status                                                  │
+│  ├── idx_proposals_created_by                                              │
+│  ├── idx_screenings_proposal                                               │
+│  ├── idx_approvals_proposal                                                │
+│  ├── idx_contracts_proposal                                                │
+│  ├── idx_contracts_status                                                  │
+│  ├── idx_payments_contract                                                 │
+│  ├── idx_payments_status                                                   │
+│  ├── idx_files_entity                                                      │
+│  ├── idx_audit_logs_user                                                   │
+│  └── idx_audit_logs_entity                                                 │
+│                                                                             │
+│  Files (4):                                                                 │
+│  ├── docker-compose.yml                                                    │
+│  └── database/                                                             │
+│      ├── migrations/                                                       │
+│      │   └── 001_init.sql        → Schema + indexes                        │
+│      └── seeds/                                                            │
+│          ├── 001_demo_users.sql  → 8 demo users                            │
+│          └── 002_demo_proposals.sql → 4 sample proposals                   │
+│                                                                             │
+│  Principle Applied: "Database ต้องถูกปกป้องจากแอปของเราเอง"                   │
+│                     "Connection pool + indexes + backup drill"              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        LAYER 5c: FILE SERVER                                │
+│                        ชั้นที่ 5c: File Server (MinIO/S3)                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Role: Shared file access, separate from app server                        │
+│  บทบาท: เก็บไฟล์แยกจาก app server                                           │
+│                                                                             │
+│  Technology: MinIO (S3-compatible)                                         │
+│  Ports: 9000 (API), 9001 (Console)                                         │
+│                                                                             │
+│  Buckets (4):                                                               │
+│  ├── proposals       → Proposal attachments                                │
+│  ├── contracts       → Contract documents                                  │
+│  ├── payments        → Payment receipts                                    │
+│  └── reports         → Generated reports                                   │
+│                                                                             │
+│  Features:                                                                  │
+│  ├── Presigned URLs for secure download                                    │
+│  ├── Base64 upload via API                                                 │
+│  └── Versioning enabled                                                    │
+│                                                                             │
+│  Files (3):                                                                 │
+│  ├── docker-compose.yml                                                    │
+│  ├── backend/src/services/fileStorage.ts  → MinIO client                   │
+│  └── backend/src/routes/files.ts          → Upload/Download API            │
+│                                                                             │
+│  Principle Applied: "ไฟล์โปรดักชันไม่ควรผูกกับเครื่องแอป"                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          FRONTEND (React SPA)                               │
+│                          หน้าบ้าน (React SPA)                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Technology: React 18 + TypeScript + Vite + TailwindCSS                    │
+│  State: Zustand + React Query                                              │
+│                                                                             │
+│  Pages (10):                                                                │
+│  ├── LoginPage       → Auth + demo user quick-select                       │
+│  ├── DashboardPage   → KPIs, budget charts, alerts                         │
+│  ├── ProposalsPage   → List with status badges                             │
+│  ├── ProposalFormPage → Create/edit form                                   │
+│  ├── ScreeningPage   → Checklist form                                      │
+│  ├── ApprovalPage    → Decision with conditions                            │
+│  ├── ContractsPage   → E-signature flow                                    │
+│  ├── PaymentsPage    → Request/approve                                     │
+│  └── ReportsPage     → Export selection                                    │
+│                                                                             │
+│  Components:                                                                │
+│  ├── Layout.tsx      → Sidebar navigation (RBAC-filtered)                  │
+│  └── FileUpload.tsx  → Drag-drop upload                                    │
+│                                                                             │
+│  Files (22):                                                                │
+│  frontend/                                                                  │
+│  ├── package.json, tsconfig.json, vite.config.ts                           │
+│  ├── tailwind.config.js, postcss.config.js                                 │
+│  ├── index.html, Dockerfile                                                │
+│  └── src/                                                                  │
+│      ├── main.tsx, App.tsx, index.css                                      │
+│      ├── hooks/useAuthStore.ts   → Zustand + RBAC helpers                  │
+│      ├── utils/api.ts            → Axios + interceptors                    │
+│      ├── components/Layout.tsx, FileUpload.tsx                             │
+│      └── pages/                  → 10 pages                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              TESTING                                        │
+│                              การทดสอบ                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  E2E Tests (Playwright):                                                    │
+│  tests/e2e/                                                                │
+│  ├── auth.spec.ts         → Login, logout, demo users                      │
+│  ├── proposals.spec.ts    → Create, list, submit                           │
+│  ├── dashboard.spec.ts    → KPIs visibility                                │
+│  └── rbac.spec.ts         → Role-based menu access                         │
+│                                                                             │
+│  Load Tests (k6):                                                           │
+│  tests/load/                                                               │
+│  ├── smoke.js             → Minimal load (1 VU, 30s)                       │
+│  ├── peak.js              → Peak traffic simulation (200 VU)               │
+│  └── stress.js            → Find breaking point (400 VU)                   │
+│                                                                             │
+│  Config:                                                                    │
+│  └── playwright.config.ts → Test configuration                             │
+│                                                                             │
+│  Files (8):                                                                 │
+│  └── tests/ (4 e2e + 3 load + 1 config)                                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+                           SUMMARY BY LAYER
+                           สรุปตามชั้น
+═══════════════════════════════════════════════════════════════════════════════
+
+┌─────────────┬──────────────────────────────────┬───────┬──────────────────┐
+│ Layer       │ Technology                       │ Files │ Key Feature      │
+├─────────────┼──────────────────────────────────┼───────┼──────────────────┤
+│ 1. DNS      │ Docker Network                   │ 1     │ Auto-resolve     │
+│ 2. LB       │ Traefik                          │ 2     │ Circuit breaker  │
+│ 3. Web      │ Nginx                            │ 2     │ Gzip + Cache 1yr │
+│ 4. App      │ Express + TypeScript             │ 18    │ 9 APIs + RBAC    │
+│ 5a. Cache   │ Redis                            │ 2     │ TTL policies     │
+│ 5b. DB      │ PostgreSQL                       │ 4     │ 8 tables + idx   │
+│ 5c. File    │ MinIO (S3)                       │ 3     │ 4 buckets        │
+│ Frontend    │ React + Vite                     │ 22    │ 10 pages         │
+│ Testing     │ Playwright + k6                  │ 8     │ E2E + Load       │
+├─────────────┼──────────────────────────────────┼───────┼──────────────────┤
+│ TOTAL       │                                  │ 59    │                  │
+└─────────────┴──────────────────────────────────┴───────┴──────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+                         ENGLISH SUMMARY
+═══════════════════════════════════════════════════════════════════════════════
+
+Completed 10 Ralph Loop iterations to build a full-stack demo system following
+the "Servers You Should Know in Modern Systems" architecture:
+
+✅ Iteration 1-2: Infrastructure (Docker, Traefik, Nginx, services)
+✅ Iteration 3: Complete Backend APIs (9 modules with RBAC)
+✅ Iteration 4: Database schema + seeds (8 tables, 11 indexes)
+✅ Iteration 5: Frontend foundation (React + auth + dashboard)
+✅ Iteration 6: Frontend pages (Screening, Approval, Contracts, Payments)
+✅ Iteration 7: File upload component
+✅ Iteration 8: Playwright E2E tests (4 test suites)
+✅ Iteration 9: k6 load tests (smoke, peak, stress)
+✅ Iteration 10: README + final polish
+
+Key Architecture Principles Applied:
+1. Layer separation - each server has single responsibility
+2. Graceful degradation - cache fallback, circuit breaker
+3. Rate limiting - protect from abuse
+4. TTL-based caching - metrics, not hope
+5. File storage separate from app - scalable
+
+═══════════════════════════════════════════════════════════════════════════════
+                         สรุปภาษาไทย
+═══════════════════════════════════════════════════════════════════════════════
+
+ทำครบ 10 รอบ Ralph Loop สร้างระบบ full-stack ตามหลัก
+"Servers You Should Know in Modern Systems":
+
+✅ รอบ 1-2: โครงสร้างพื้นฐาน (Docker, Traefik, Nginx, services)
+✅ รอบ 3: Backend APIs ครบ (9 modules พร้อม RBAC)
+✅ รอบ 4: Database schema + seeds (8 ตาราง, 11 indexes)
+✅ รอบ 5: Frontend พื้นฐาน (React + auth + dashboard)
+✅ รอบ 6: หน้า Frontend (คัดกรอง, อนุมัติ, สัญญา, เบิกจ่าย)
+✅ รอบ 7: Component อัพโหลดไฟล์
+✅ รอบ 8: Playwright E2E tests (4 test suites)
+✅ รอบ 9: k6 load tests (smoke, peak, stress)
+✅ รอบ 10: README + ขัดเกลา
+
+หลักการสถาปัตยกรรมที่ใช้:
+1. แยก Layer ชัดเจน - แต่ละ server มีหน้าที่เดียว
+2. Graceful degradation - cache fallback, circuit breaker
+3. Rate limiting - ป้องกันการโจมตี
+4. TTL-based caching - มีตัวเลข ไม่ใช่ความเชื่อ
+5. File storage แยก - scale ได้
+
+═══════════════════════════════════════════════════════════════════════════════
+                             HOW TO RUN
+                             วิธีรัน
+═══════════════════════════════════════════════════════════════════════════════
+
+# Start all services
+cd projects/demo-granting-system
+docker compose up -d
+
+# Check health
+curl http://localhost/health
+
+# Access points
+http://localhost          → Frontend
+http://localhost/api      → Backend API
+http://localhost:8080     → Traefik Dashboard
+http://localhost:9001     → MinIO Console
+
+# Demo login
+Email: partner@demo.com
+Password: partner123
+
+═══════════════════════════════════════════════════════════════════════════════
+Created: 2026-01-31
+Ralph Loop: 10/10 iterations (100% complete)
+Total Files: 59
+Author: Peepo Oracle
+Source: idea.txt + IMG_3228.jpg (ByteByteGo)
+═══════════════════════════════════════════════════════════════════════════════
