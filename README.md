@@ -1,1 +1,1 @@
-# demo-oracle-cli
+# peepo-oracle
