@@ -1,0 +1,1039 @@
+================================================================================
+                    DEMO GRANTING SYSTEM — LAYERS DETAIL
+================================================================================
+
+                        รายละเอียดย่อยของแต่ละ Layer
+                     พร้อม API Messages และ Data Structures
+
+================================================================================
+LAYER OVERVIEW
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │   L1 Client ──► L2 Load Balancer ──► L3 Web Server ──► L4 App Server   │
+    │   (React)       (Traefik)            (Nginx)           (Express)        │
+    │                                                                         │
+    │                                              │                          │
+    │                          ┌───────────────────┼───────────────────┐      │
+    │                          ▼                   ▼                   ▼      │
+    │                      L5a Cache          L5b Database        L5c Files   │
+    │                      (Redis)            (PostgreSQL)        (MinIO)     │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L1: CLIENT LAYER — Frontend React App
+================================================================================
+
+    ตำแหน่ง: frontend/src/
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  COMPONENT STRUCTURE                                                    │
+    │  ════════════════════                                                   │
+    │                                                                         │
+    │  src/                                                                   │
+    │  ├── main.tsx                 ◄── Entry point                          │
+    │  ├── App.tsx                  ◄── Routes definition                    │
+    │  ├── index.css                ◄── TailwindCSS imports                  │
+    │  │                                                                      │
+    │  ├── hooks/                                                             │
+    │  │   └── useAuthStore.ts      ◄── Zustand store (auth + RBAC)          │
+    │  │                                                                      │
+    │  ├── utils/                                                             │
+    │  │   └── api.ts               ◄── Axios client + interceptors          │
+    │  │                                                                      │
+    │  ├── components/                                                        │
+    │  │   ├── Layout.tsx           ◄── Sidebar + navigation                 │
+    │  │   └── FileUpload.tsx       ◄── File upload component                │
+    │  │                                                                      │
+    │  └── pages/                                                             │
+    │      ├── LoginPage.tsx        ◄── Authentication                       │
+    │      ├── DashboardPage.tsx    ◄── KPI metrics                          │
+    │      ├── ScreeningPage.tsx    ◄── คัดกรอง                               │
+    │      ├── ApprovalPage.tsx     ◄── อนุมัติ                               │
+    │      ├── ContractsPage.tsx    ◄── สัญญา                                │
+    │      ├── PaymentsPage.tsx     ◄── เบิกจ่าย                              │
+    │      ├── ReportsPage.tsx      ◄── รายงาน                               │
+    │      └── proposals/                                                     │
+    │          ├── ProposalsPage.tsx                                          │
+    │          └── ProposalFormPage.tsx                                       │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  STATE MANAGEMENT                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  // useAuthStore.ts (Zustand)                                           │
+    │  interface AuthState {                                                  │
+    │    user: User | null;                                                   │
+    │    token: string | null;                                                │
+    │    isAuthenticated: boolean;                                            │
+    │    login: (email, password) => Promise<void>;                           │
+    │    logout: () => void;                                                  │
+    │    hasPermission: (permission: string) => boolean;                      │
+    │  }                                                                      │
+    │                                                                         │
+    │  // User object                                                         │
+    │  interface User {                                                       │
+    │    email: string;                                                       │
+    │    name: string;                                                        │
+    │    role: "partner" | "academic" | "approver" |                          │
+    │          "contract_center" | "legal";                                   │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API CLIENT                                                             │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  // api.ts (Axios)                                                      │
+    │  const api = axios.create({                                             │
+    │    baseURL: "/api",                                                     │
+    │    headers: { "Content-Type": "application/json" }                      │
+    │  });                                                                    │
+    │                                                                         │
+    │  // Request interceptor — add token                                     │
+    │  api.interceptors.request.use((config) => {                             │
+    │    const token = localStorage.getItem("token");                         │
+    │    if (token) {                                                         │
+    │      config.headers.Authorization = `Bearer ${token}`;                  │
+    │    }                                                                    │
+    │    return config;                                                       │
+    │  });                                                                    │
+    │                                                                         │
+    │  // Response interceptor — handle 401                                   │
+    │  api.interceptors.response.use(                                         │
+    │    (res) => res,                                                        │
+    │    (err) => {                                                           │
+    │      if (err.response?.status === 401) {                                │
+    │        // redirect to login                                             │
+    │      }                                                                  │
+    │      return Promise.reject(err);                                        │
+    │    }                                                                    │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  ROUTING                                                                │
+    │  ═══════                                                                │
+    │                                                                         │
+    │  /                      → redirect to /dashboard or /login              │
+    │  /login                 → LoginPage                                     │
+    │  /dashboard             → DashboardPage (protected)                     │
+    │  /proposals             → ProposalsPage (protected)                     │
+    │  /proposals/new         → ProposalFormPage (protected)                  │
+    │  /proposals/:id/edit    → ProposalFormPage (protected)                  │
+    │  /screening             → ScreeningPage (academic, approver)            │
+    │  /approval              → ApprovalPage (approver)                       │
+    │  /contracts             → ContractsPage (protected)                     │
+    │  /payments              → PaymentsPage (protected)                      │
+    │  /reports               → ReportsPage (protected)                       │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L2: LOAD BALANCER — Traefik
+================================================================================
+
+    ตำแหน่ง: docker-compose.yml (traefik service)
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  ROUTING RULES                                                          │
+    │  ═════════════                                                          │
+    │                                                                         │
+    │  ┌─────────────────────────────────────────────────────────────────┐   │
+    │  │                         Traefik :80                             │   │
+    │  └─────────────────────────────────────────────────────────────────┘   │
+    │                              │                                          │
+    │              ┌───────────────┴───────────────┐                          │
+    │              │                               │                          │
+    │              ▼                               ▼                          │
+    │      PathPrefix(`/api`)              PathPrefix(`/`)                    │
+    │              │                               │                          │
+    │              ▼                               ▼                          │
+    │      ┌─────────────┐                 ┌─────────────┐                    │
+    │      │  Backend    │                 │   Nginx     │                    │
+    │      │  :3000      │                 │   :80       │                    │
+    │      └─────────────┘                 └─────────────┘                    │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  DOCKER LABELS                                                          │
+    │  ═════════════                                                          │
+    │                                                                         │
+    │  # Backend routing                                                      │
+    │  traefik.http.routers.backend.rule=PathPrefix(`/api`)                   │
+    │  traefik.http.services.backend.loadbalancer.server.port=3000            │
+    │                                                                         │
+    │  # Frontend routing                                                     │
+    │  traefik.http.routers.nginx.rule=PathPrefix(`/`)                        │
+    │  traefik.http.services.nginx.loadbalancer.server.port=80                │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  MIDDLEWARE                                                             │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  - Rate Limiting                                                        │
+    │  - Retry on 5xx errors                                                  │
+    │  - Compression                                                          │
+    │  - SSL/TLS termination (production)                                     │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L3: WEB SERVER — Nginx
+================================================================================
+
+    ตำแหน่ง: nginx/nginx.conf
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  CONFIGURATION                                                          │
+    │  ═════════════                                                          │
+    │                                                                         │
+    │  server {                                                               │
+    │    listen 80;                                                           │
+    │    root /usr/share/nginx/html;                                          │
+    │    index index.html;                                                    │
+    │                                                                         │
+    │    # SPA fallback — ทุก route กลับไป index.html                         │
+    │    location / {                                                         │
+    │      try_files $uri $uri/ /index.html;                                  │
+    │    }                                                                    │
+    │                                                                         │
+    │    # Static assets — cache 1 year                                       │
+    │    location /assets/ {                                                  │
+    │      expires 1y;                                                        │
+    │      add_header Cache-Control "public, immutable";                      │
+    │    }                                                                    │
+    │                                                                         │
+    │    # Gzip compression                                                   │
+    │    gzip on;                                                             │
+    │    gzip_types text/css application/javascript application/json;         │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE STRUCTURE (Built)                                                 │
+    │  ════════════════════════                                               │
+    │                                                                         │
+    │  /usr/share/nginx/html/                                                 │
+    │  ├── index.html                 ◄── SPA shell                          │
+    │  ├── assets/                                                            │
+    │  │   ├── index-[hash].js        ◄── App bundle                         │
+    │  │   ├── index-[hash].css       ◄── Styles                             │
+    │  │   └── vendor-[hash].js       ◄── Dependencies                       │
+    │  └── favicon.ico                                                        │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L4: APPLICATION SERVER — Express API
+================================================================================
+
+    ตำแหน่ง: backend/src/
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  FOLDER STRUCTURE                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  backend/src/                                                           │
+    │  ├── index.ts                 ◄── Entry point, middleware setup        │
+    │  │                                                                      │
+    │  ├── middleware/                                                        │
+    │  │   ├── auth.ts              ◄── JWT verify + RBAC                    │
+    │  │   ├── rateLimit.ts         ◄── 100 req/min per IP                   │
+    │  │   └── errorHandler.ts      ◄── Global error handling                │
+    │  │                                                                      │
+    │  ├── routes/                                                            │
+    │  │   ├── auth.ts              ◄── /api/auth/*                          │
+    │  │   ├── proposals.ts         ◄── /api/proposals/*                     │
+    │  │   ├── screening.ts         ◄── /api/screening/*                     │
+    │  │   ├── approval.ts          ◄── /api/approval/*                      │
+    │  │   ├── contracts.ts         ◄── /api/contracts/*                     │
+    │  │   ├── payments.ts          ◄── /api/payments/*                      │
+    │  │   ├── dashboard.ts         ◄── /api/dashboard                       │
+    │  │   ├── reports.ts           ◄── /api/reports/*                       │
+    │  │   └── files.ts             ◄── /api/files/*                         │
+    │  │                                                                      │
+    │  ├── services/                                                          │
+    │  │   └── fileStorage.ts       ◄── MinIO client wrapper                 │
+    │  │                                                                      │
+    │  └── utils/                                                             │
+    │      ├── cache.ts             ◄── Redis + fallback                     │
+    │      └── logger.ts            ◄── Pino JSON logger                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  MIDDLEWARE CHAIN                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  Request                                                                │
+    │     │                                                                   │
+    │     ▼                                                                   │
+    │  ┌─────────────────┐                                                    │
+    │  │ Helmet          │ ◄── Security headers                              │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ CORS            │ ◄── Cross-origin                                  │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ Compression     │ ◄── Gzip responses                                │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ JSON Parser     │ ◄── Parse request body                            │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ Rate Limiter    │ ◄── 100 req/min per IP                            │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ authenticate()  │ ◄── JWT verify (if needed)                        │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ requirePerm()   │ ◄── RBAC check (if needed)                        │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ Route Handler   │ ◄── Business logic                                │
+    │  └────────┬────────┘                                                    │
+    │           ▼                                                             │
+    │  ┌─────────────────┐                                                    │
+    │  │ Error Handler   │ ◄── Catch all errors                              │
+    │  └─────────────────┘                                                    │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L4: API ENDPOINTS — รายละเอียด
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  AUTH MODULE — /api/auth                                                │
+    │  ═══════════════════════                                                │
+    │                                                                         │
+    │  POST /api/auth/login                                                   │
+    │  ─────────────────────                                                  │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "email": "partner@demo.com",                                         │
+    │    "password": "partner123"                                             │
+    │  }                                                                      │
+    │                                                                         │
+    │  Response (201):                                                        │
+    │  {                                                                      │
+    │    "token": "eyJhbGciOiJIUzI1NiIs...",                                  │
+    │    "user": {                                                            │
+    │      "email": "partner@demo.com",                                       │
+    │      "role": "partner",                                                 │
+    │      "name": "ภาคีเครือข่าย"                                            │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/auth/logout                                                  │
+    │  ──────────────────────                                                 │
+    │  Response: { "message": "Logged out successfully" }                     │
+    │                                                                         │
+    │  GET /api/auth/me                                                       │
+    │  ─────────────────                                                      │
+    │  Response: { "authenticated": true }                                    │
+    │                                                                         │
+    │  GET /api/auth/roles                                                    │
+    │  ────────────────────                                                   │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "roles": [                                                           │
+    │      { "id": "partner", "name": "ภาคีเครือข่าย" },                       │
+    │      { "id": "academic", "name": "นักวิชาการ" },                         │
+    │      { "id": "approver", "name": "ผู้อนุมัติ" },                          │
+    │      { "id": "contract_center", "name": "ศูนย์สัญญา" },                  │
+    │      { "id": "legal", "name": "กฎหมาย" }                                │
+    │    ]                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  PROPOSALS MODULE — /api/proposals                                      │
+    │  ═════════════════════════════════                                      │
+    │                                                                         │
+    │  GET /api/proposals                                                     │
+    │  ───────────────────                                                    │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "proposals": [                                                       │
+    │      {                                                                  │
+    │        "id": 1,                                                         │
+    │        "projectName": "โครงการพัฒนาชุมชน",                               │
+    │        "description": "รายละเอียดโครงการ...",                            │
+    │        "budget": 5000000,                                               │
+    │        "duration": 12,                                                  │
+    │        "objectives": ["obj1", "obj2"],                                  │
+    │        "targetGroup": "ชุมชนในพื้นที่",                                   │
+    │        "status": "draft" | "submitted" | "screening" |                  │
+    │                  "approved" | "rejected" | "contracted",                │
+    │        "createdBy": "partner@demo.com",                                 │
+    │        "createdAt": "2026-01-31T12:00:00Z",                             │
+    │        "updatedAt": "2026-01-31T12:00:00Z"                              │
+    │      }                                                                  │
+    │    ],                                                                   │
+    │    "total": 1                                                           │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/proposals                                                    │
+    │  ────────────────────                                                   │
+    │  Permission: proposal:create                                            │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "projectName": "ชื่อโครงการ (1-500 ตัวอักษร)",                         │
+    │    "description": "รายละเอียด (min 20 ตัวอักษร)",                        │
+    │    "budget": 5000000,        // ตัวเลข > 0                              │
+    │    "duration": 12,           // เดือน 1-60                              │
+    │    "objectives": ["วัตถุประสงค์ 1"],  // array min 1                     │
+    │    "targetGroup": "กลุ่มเป้าหมาย"                                        │
+    │  }                                                                      │
+    │                                                                         │
+    │  Response (201): Proposal object with status "draft"                    │
+    │                                                                         │
+    │  GET /api/proposals/:id                                                 │
+    │  ───────────────────────                                                │
+    │  Response: Single proposal object                                       │
+    │                                                                         │
+    │  PUT /api/proposals/:id                                                 │
+    │  ───────────────────────                                                │
+    │  Permission: proposal:edit                                              │
+    │  Request: Partial proposal fields                                       │
+    │                                                                         │
+    │  POST /api/proposals/:id/submit                                         │
+    │  ───────────────────────────────                                        │
+    │  Permission: proposal:submit                                            │
+    │  Response: Proposal with status "submitted", submittedAt                │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  SCREENING MODULE — /api/screening                                      │
+    │  ═════════════════════════════════                                      │
+    │                                                                         │
+    │  GET /api/screening                                                     │
+    │  ───────────────────                                                    │
+    │  Roles: academic, approver                                              │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "screenings": [                                                      │
+    │      {                                                                  │
+    │        "id": 1,                                                         │
+    │        "proposalId": 1,                                                 │
+    │        "eligibilityCheck": true,      // ผ่านคุณสมบัติ                   │
+    │        "documentComplete": true,      // เอกสารครบ                      │
+    │        "budgetReasonable": true,      // งบประมาณเหมาะสม                 │
+    │        "comments": "ผ่านการคัดกรอง",                                     │
+    │        "recommendation": "pass" | "revise" | "reject",                  │
+    │        "screenedBy": "academic@demo.com",                               │
+    │        "screenedAt": "2026-01-31T12:00:00Z"                             │
+    │      }                                                                  │
+    │    ],                                                                   │
+    │    "total": 1                                                           │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/screening                                                    │
+    │  ────────────────────                                                   │
+    │  Permission: screening:create                                           │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "proposalId": 1,                                                     │
+    │    "eligibilityCheck": true,                                            │
+    │    "documentComplete": true,                                            │
+    │    "budgetReasonable": true,                                            │
+    │    "comments": "หมายเหตุ (optional)",                                    │
+    │    "recommendation": "pass" | "revise" | "reject"                       │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  APPROVAL MODULE — /api/approval                                        │
+    │  ═══════════════════════════════                                        │
+    │                                                                         │
+    │  GET /api/approval                                                      │
+    │  ──────────────────                                                     │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "approvals": [                                                       │
+    │      {                                                                  │
+    │        "id": 1,                                                         │
+    │        "proposalId": 1,                                                 │
+    │        "decision": "approved" | "conditionally_approved" | "rejected",  │
+    │        "conditions": ["เงื่อนไข 1"],                                     │
+    │        "budgetApproved": 5000000,                                       │
+    │        "comments": "อนุมัติโครงการ",                                     │
+    │        "approvedBy": "approver@demo.com",                               │
+    │        "approvedAt": "2026-01-31T12:00:00Z"                             │
+    │      }                                                                  │
+    │    ],                                                                   │
+    │    "total": 1                                                           │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/approval                                                     │
+    │  ───────────────────                                                    │
+    │  Permission: approval:create                                            │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "proposalId": 1,                                                     │
+    │    "decision": "approved",                                              │
+    │    "conditions": [],                                                    │
+    │    "budgetApproved": 5000000,                                           │
+    │    "comments": "อนุมัติ"                                                 │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  CONTRACTS MODULE — /api/contracts                                      │
+    │  ═════════════════════════════════                                      │
+    │                                                                         │
+    │  GET /api/contracts                                                     │
+    │  ───────────────────                                                    │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "contracts": [                                                       │
+    │      {                                                                  │
+    │        "id": 1,                                                         │
+    │        "proposalId": 1,                                                 │
+    │        "contractNumber": "CNT-2026-001",                                │
+    │        "startDate": "2026-02-01",                                       │
+    │        "endDate": "2027-02-01",                                         │
+    │        "totalBudget": 5000000,                                          │
+    │        "installments": [                                                │
+    │          { "number": 1, "amount": 1500000, "dueDate": "2026-02-15" },   │
+    │          { "number": 2, "amount": 1500000, "dueDate": "2026-06-15" },   │
+    │          { "number": 3, "amount": 2000000, "dueDate": "2026-10-15" }    │
+    │        ],                                                               │
+    │        "status": "draft" | "pending_signature" | "signed" |             │
+    │                  "active" | "completed" | "terminated",                 │
+    │        "signatures": [                                                  │
+    │          {                                                              │
+    │            "signedBy": "contract@demo.com",                             │
+    │            "signedAt": "2026-01-31T12:00:00Z",                          │
+    │            "role": "contract_center"                                    │
+    │          }                                                              │
+    │        ],                                                               │
+    │        "createdAt": "2026-01-31T12:00:00Z"                              │
+    │      }                                                                  │
+    │    ],                                                                   │
+    │    "total": 1                                                           │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/contracts                                                    │
+    │  ────────────────────                                                   │
+    │  Permission: contract:create                                            │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "proposalId": 1,                                                     │
+    │    "contractNumber": "CNT-2026-001",                                    │
+    │    "startDate": "2026-02-01",                                           │
+    │    "endDate": "2027-02-01",                                             │
+    │    "totalBudget": 5000000,                                              │
+    │    "installments": [                                                    │
+    │      { "number": 1, "amount": 1500000, "dueDate": "2026-02-15" }        │
+    │    ]                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/contracts/:id/sign                                           │
+    │  ─────────────────────────────                                          │
+    │  Permission: contract:sign                                              │
+    │  Response: Contract with updated signatures                             │
+    │            status = "signed" when >= 2 signatures                       │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  PAYMENTS MODULE — /api/payments                                        │
+    │  ═══════════════════════════════                                        │
+    │                                                                         │
+    │  GET /api/payments                                                      │
+    │  ──────────────────                                                     │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "payments": [                                                        │
+    │      {                                                                  │
+    │        "id": 1,                                                         │
+    │        "contractId": 1,                                                 │
+    │        "installmentNumber": 1,                                          │
+    │        "amount": 1500000,                                               │
+    │        "description": "เบิกจ่ายงวดที่ 1",                                │
+    │        "status": "pending" | "reviewing" | "approved" |                 │
+    │                  "paid" | "rejected",                                   │
+    │        "attachments": ["receipt.pdf"],                                  │
+    │        "requestedBy": "partner@demo.com",                               │
+    │        "requestedAt": "2026-01-31T12:00:00Z",                           │
+    │        "approvedBy": "approver@demo.com",                               │
+    │        "approvedAt": "2026-01-31T14:00:00Z"                             │
+    │      }                                                                  │
+    │    ],                                                                   │
+    │    "total": 1                                                           │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/payments/request                                             │
+    │  ───────────────────────────                                            │
+    │  Permission: payment:request                                            │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "contractId": 1,                                                     │
+    │    "installmentNumber": 1,                                              │
+    │    "amount": 1500000,                                                   │
+    │    "description": "เบิกจ่ายงวดที่ 1",                                    │
+    │    "attachments": ["file-id-1"]                                         │
+    │  }                                                                      │
+    │                                                                         │
+    │  POST /api/payments/:id/approve                                         │
+    │  ───────────────────────────────                                        │
+    │  Permission: payment:approve                                            │
+    │  Response: Payment with status "approved"                               │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  DASHBOARD MODULE — /api/dashboard                                      │
+    │  ═════════════════════════════════                                      │
+    │                                                                         │
+    │  GET /api/dashboard                                                     │
+    │  ───────────────────                                                    │
+    │  Cache: 5 นาที                                                          │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "proposals": {                                                       │
+    │      "total": 45,                                                       │
+    │      "draft": 12,                                                       │
+    │      "submitted": 15,                                                   │
+    │      "approved": 10,                                                    │
+    │      "rejected": 8                                                      │
+    │    },                                                                   │
+    │    "budget": {                                                          │
+    │      "total": 25000000,         // งบประมาณรวม                           │
+    │      "allocated": 18500000,     // จัดสรรแล้ว                            │
+    │      "disbursed": 12000000,     // เบิกจ่ายแล้ว                          │
+    │      "remaining": 6500000       // คงเหลือ                               │
+    │    },                                                                   │
+    │    "timeline": {                                                        │
+    │      "onTrack": 28,             // ตามแผน                               │
+    │      "delayed": 7,              // ล่าช้า                                │
+    │      "completed": 10            // เสร็จสิ้น                             │
+    │    },                                                                   │
+    │    "alerts": [                                                          │
+    │      {                                                                  │
+    │        "type": "warning",                                               │
+    │        "message": "3 โครงการใกล้ครบกำหนดส่งรายงาน",                       │
+    │        "count": 3                                                       │
+    │      },                                                                 │
+    │      {                                                                  │
+    │        "type": "info",                                                  │
+    │        "message": "5 ข้อเสนอรอการพิจารณา",                               │
+    │        "count": 5                                                       │
+    │      }                                                                  │
+    │    ]                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILES MODULE — /api/files                                              │
+    │  ═════════════════════════                                              │
+    │                                                                         │
+    │  POST /api/files/:bucket                                                │
+    │  ────────────────────────                                               │
+    │  Buckets: proposals, contracts, payments, reports                       │
+    │  Request:                                                               │
+    │  {                                                                      │
+    │    "filename": "document.pdf",                                          │
+    │    "content": "base64-encoded-content",                                 │
+    │    "contentType": "application/pdf"                                     │
+    │  }                                                                      │
+    │                                                                         │
+    │  Response (201):                                                        │
+    │  {                                                                      │
+    │    "path": "proposals/1706698800000-document.pdf",                      │
+    │    "bucket": "proposals",                                               │
+    │    "objectName": "1706698800000-document.pdf",                          │
+    │    "size": 102400                                                       │
+    │  }                                                                      │
+    │                                                                         │
+    │  GET /api/files/:bucket                                                 │
+    │  ───────────────────────                                                │
+    │  Query: ?prefix=optional-prefix                                         │
+    │  Response: { "files": [...], "total": n }                               │
+    │                                                                         │
+    │  GET /api/files/:bucket/:objectName                                     │
+    │  ─────────────────────────────────                                      │
+    │  Response:                                                              │
+    │  {                                                                      │
+    │    "url": "http://minio:9000/...",  // Presigned URL                    │
+    │    "expiresIn": 3600                // 1 ชั่วโมง                         │
+    │  }                                                                      │
+    │                                                                         │
+    │  DELETE /api/files/:bucket/:objectName                                  │
+    │  ──────────────────────────────────────                                 │
+    │  Response: { "message": "File deleted" }                                │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L5a: CACHE LAYER — Redis
+================================================================================
+
+    ตำแหน่ง: backend/src/utils/cache.ts
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  CACHE PATTERNS                                                         │
+    │  ══════════════                                                         │
+    │                                                                         │
+    │  // Cache interface                                                     │
+    │  interface CacheClient {                                                │
+    │    get(key: string): Promise<string | null>;                            │
+    │    set(key: string, value: string, ttl?: number): Promise<void>;        │
+    │    del(key: string): Promise<void>;                                     │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  CACHE KEYS                                                             │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ┌────────────────────────┬──────────┬──────────────────────────────┐  │
+    │  │ Key Pattern            │ TTL      │ Description                  │  │
+    │  ├────────────────────────┼──────────┼──────────────────────────────┤  │
+    │  │ session:{userId}       │ 30 นาที  │ User session data            │  │
+    │  │ dashboard              │ 5 นาที   │ Dashboard KPI metrics        │  │
+    │  │ proposals:list         │ 1 นาที   │ Proposals list cache         │  │
+    │  │ rate:{ip}              │ 1 นาที   │ Rate limit counter           │  │
+    │  └────────────────────────┴──────────┴──────────────────────────────┘  │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FALLBACK STRATEGY                                                      │
+    │  ═════════════════                                                      │
+    │                                                                         │
+    │  Redis unavailable                                                      │
+    │       │                                                                 │
+    │       ▼                                                                 │
+    │  ┌─────────────────┐                                                    │
+    │  │ In-Memory Map   │ ◄── Fallback (ไม่ share ข้าม instances)           │
+    │  └─────────────────┘                                                    │
+    │                                                                         │
+    │  // Fallback implementation                                             │
+    │  const memoryCache = new Map<string, { value: string, expires: number }>();│
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L5b: DATABASE LAYER — PostgreSQL
+================================================================================
+
+    ตำแหน่ง: database/migrations/001_init.sql
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  TABLE: users                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  CREATE TABLE users (                                                   │
+    │    id              SERIAL PRIMARY KEY,                                  │
+    │    email           VARCHAR(255) UNIQUE NOT NULL,                        │
+    │    password_hash   VARCHAR(255) NOT NULL,                               │
+    │    name            VARCHAR(255) NOT NULL,                               │
+    │    role            VARCHAR(50) NOT NULL                                 │
+    │                    CHECK (role IN ('partner', 'academic',               │
+    │                           'approver', 'contract_center', 'legal')),     │
+    │    organization    VARCHAR(255),                                        │
+    │    phone           VARCHAR(20),                                         │
+    │    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                 │
+    │    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP                  │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: proposals                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  CREATE TABLE proposals (                                               │
+    │    id              SERIAL PRIMARY KEY,                                  │
+    │    project_name    VARCHAR(500) NOT NULL,                               │
+    │    description     TEXT NOT NULL,                                       │
+    │    budget          DECIMAL(15,2) NOT NULL,                              │
+    │    duration_months INTEGER NOT NULL,                                    │
+    │    objectives      JSONB NOT NULL,          -- ["obj1", "obj2"]         │
+    │    target_group    TEXT NOT NULL,                                       │
+    │    status          VARCHAR(50) DEFAULT 'draft'                          │
+    │                    CHECK (status IN ('draft', 'submitted',              │
+    │                           'screening', 'approved', 'rejected',          │
+    │                           'contracted')),                               │
+    │    created_by      INTEGER REFERENCES users(id),                        │
+    │    submitted_at    TIMESTAMP,                                           │
+    │    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                 │
+    │    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP                  │
+    │  );                                                                     │
+    │                                                                         │
+    │  CREATE INDEX idx_proposals_status ON proposals(status);                │
+    │  CREATE INDEX idx_proposals_created_by ON proposals(created_by);        │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: screenings                                                      │
+    │  ═════════════════                                                      │
+    │                                                                         │
+    │  CREATE TABLE screenings (                                              │
+    │    id                SERIAL PRIMARY KEY,                                │
+    │    proposal_id       INTEGER REFERENCES proposals(id),                  │
+    │    eligibility_check BOOLEAN NOT NULL,                                  │
+    │    document_complete BOOLEAN NOT NULL,                                  │
+    │    budget_reasonable BOOLEAN NOT NULL,                                  │
+    │    comments          TEXT,                                              │
+    │    recommendation    VARCHAR(20)                                        │
+    │                      CHECK (recommendation IN ('pass','revise','reject')),│
+    │    screened_by       INTEGER REFERENCES users(id),                      │
+    │    screened_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP                │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: approvals                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  CREATE TABLE approvals (                                               │
+    │    id              SERIAL PRIMARY KEY,                                  │
+    │    proposal_id     INTEGER REFERENCES proposals(id),                    │
+    │    decision        VARCHAR(30)                                          │
+    │                    CHECK (decision IN ('approved',                      │
+    │                           'conditionally_approved', 'rejected')),       │
+    │    conditions      JSONB,                   -- ["condition1"]           │
+    │    budget_approved DECIMAL(15,2),                                       │
+    │    comments        TEXT,                                                │
+    │    approved_by     INTEGER REFERENCES users(id),                        │
+    │    approved_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP                  │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: contracts                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  CREATE TABLE contracts (                                               │
+    │    id              SERIAL PRIMARY KEY,                                  │
+    │    proposal_id     INTEGER REFERENCES proposals(id),                    │
+    │    contract_number VARCHAR(100) UNIQUE NOT NULL,                        │
+    │    start_date      DATE NOT NULL,                                       │
+    │    end_date        DATE NOT NULL,                                       │
+    │    total_budget    DECIMAL(15,2) NOT NULL,                              │
+    │    installments    JSONB NOT NULL,          -- งวดการจ่าย               │
+    │    status          VARCHAR(30) DEFAULT 'draft'                          │
+    │                    CHECK (status IN ('draft', 'pending_signature',      │
+    │                           'signed', 'active', 'completed',              │
+    │                           'terminated')),                               │
+    │    signatures      JSONB DEFAULT '[]',      -- ลายเซ็น                  │
+    │    created_by      INTEGER REFERENCES users(id),                        │
+    │    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,                 │
+    │    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP                  │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: payments                                                        │
+    │  ═══════════════                                                        │
+    │                                                                         │
+    │  CREATE TABLE payments (                                                │
+    │    id                 SERIAL PRIMARY KEY,                               │
+    │    contract_id        INTEGER REFERENCES contracts(id),                 │
+    │    installment_number INTEGER NOT NULL,                                 │
+    │    amount             DECIMAL(15,2) NOT NULL,                           │
+    │    description        TEXT,                                             │
+    │    status             VARCHAR(20) DEFAULT 'pending'                     │
+    │                       CHECK (status IN ('pending', 'reviewing',         │
+    │                              'approved', 'paid', 'rejected')),          │
+    │    attachments        JSONB DEFAULT '[]',                               │
+    │    requested_by       INTEGER REFERENCES users(id),                     │
+    │    requested_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,              │
+    │    approved_by        INTEGER REFERENCES users(id),                     │
+    │    approved_at        TIMESTAMP,                                        │
+    │    paid_at            TIMESTAMP                                         │
+    │  );                                                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TABLE: audit_logs                                                      │
+    │  ═════════════════                                                      │
+    │                                                                         │
+    │  CREATE TABLE audit_logs (                                              │
+    │    id           SERIAL PRIMARY KEY,                                     │
+    │    user_id      INTEGER REFERENCES users(id),                           │
+    │    action       VARCHAR(100) NOT NULL,      -- 'create', 'update'       │
+    │    entity_type  VARCHAR(50) NOT NULL,       -- 'proposal', 'contract'   │
+    │    entity_id    INTEGER,                                                │
+    │    old_value    JSONB,                      -- ค่าเก่า                  │
+    │    new_value    JSONB,                      -- ค่าใหม่                  │
+    │    ip_address   VARCHAR(45),                                            │
+    │    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP                     │
+    │  );                                                                     │
+    │                                                                         │
+    │  CREATE INDEX idx_audit_user ON audit_logs(user_id);                    │
+    │  CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);   │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L5c: FILE STORAGE LAYER — MinIO
+================================================================================
+
+    ตำแหน่ง: backend/src/services/fileStorage.ts
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  BUCKETS                                                                │
+    │  ═══════                                                                │
+    │                                                                         │
+    │  ┌─────────────────┬──────────────────────────────────────────────────┐ │
+    │  │ Bucket          │ Description                                      │ │
+    │  ├─────────────────┼──────────────────────────────────────────────────┤ │
+    │  │ proposals       │ เอกสารประกอบข้อเสนอโครงการ (PDF, Word)           │ │
+    │  │ contracts       │ ไฟล์สัญญา (PDF ที่เซ็นแล้ว)                       │ │
+    │  │ payments        │ ใบเสร็จ, หลักฐานการเบิกจ่าย                       │ │
+    │  │ reports         │ รายงานที่ generate (Excel, PDF)                  │ │
+    │  └─────────────────┴──────────────────────────────────────────────────┘ │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE STORAGE SERVICE                                                   │
+    │  ════════════════════                                                   │
+    │                                                                         │
+    │  // fileStorage.ts                                                      │
+    │  interface FileStorageService {                                         │
+    │    upload(bucket: string, file: Buffer, filename: string): Promise<{    │
+    │      path: string;                                                      │
+    │      objectName: string;                                                │
+    │      size: number;                                                      │
+    │    }>;                                                                  │
+    │                                                                         │
+    │    download(bucket: string, objectName: string): Promise<{              │
+    │      url: string;           // Presigned URL                            │
+    │      expiresIn: number;     // seconds                                  │
+    │    }>;                                                                  │
+    │                                                                         │
+    │    list(bucket: string, prefix?: string): Promise<string[]>;            │
+    │                                                                         │
+    │    delete(bucket: string, objectName: string): Promise<void>;           │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE NAMING CONVENTION                                                 │
+    │  ══════════════════════                                                 │
+    │                                                                         │
+    │  {timestamp}-{original-filename}                                        │
+    │                                                                         │
+    │  Example:                                                               │
+    │    proposals/1706698800000-project-document.pdf                         │
+    │    contracts/1706698900000-signed-contract.pdf                          │
+    │    payments/1706699000000-receipt-001.pdf                               │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+WORKFLOW STATE MACHINES
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  PROPOSAL WORKFLOW                                                      │
+    │  ═════════════════                                                      │
+    │                                                                         │
+    │  ┌────────┐   submit   ┌───────────┐  screen   ┌───────────┐           │
+    │  │ draft  │ ─────────► │ submitted │ ────────► │ screening │           │
+    │  └────────┘            └───────────┘           └─────┬─────┘           │
+    │                                                      │                  │
+    │                                    ┌─────────────────┼─────────────────┐│
+    │                                    │                 │                 ││
+    │                                    ▼                 ▼                 ▼│
+    │                             ┌──────────┐      ┌──────────┐    ┌────────┐│
+    │                             │ approved │      │ rejected │    │ revise ││
+    │                             └────┬─────┘      └──────────┘    └───┬────┘│
+    │                                  │                                │     │
+    │                                  ▼                                │     │
+    │                           ┌────────────┐                          │     │
+    │                           │ contracted │◄─────────────────────────┘     │
+    │                           └────────────┘                                │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  CONTRACT WORKFLOW                                                      │
+    │  ═════════════════                                                      │
+    │                                                                         │
+    │  ┌────────┐  prepare  ┌───────────────────┐  sign (≥2)  ┌────────┐     │
+    │  │ draft  │ ────────► │ pending_signature │ ──────────► │ signed │     │
+    │  └────────┘           └───────────────────┘             └───┬────┘     │
+    │                                                             │          │
+    │                                                             ▼          │
+    │                                                       ┌──────────┐     │
+    │                                                       │  active  │     │
+    │                                                       └────┬─────┘     │
+    │                                                            │           │
+    │                                          ┌─────────────────┼──────┐    │
+    │                                          ▼                        ▼    │
+    │                                   ┌───────────┐            ┌───────────┐│
+    │                                   │ completed │            │terminated ││
+    │                                   └───────────┘            └───────────┘│
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  PAYMENT WORKFLOW                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  ┌─────────┐  legal   ┌───────────┐  approver  ┌──────────┐            │
+    │  │ pending │ ───────► │ reviewing │ ─────────► │ approved │            │
+    │  └─────────┘          └─────┬─────┘            └────┬─────┘            │
+    │                             │                       │                   │
+    │                             ▼                       ▼                   │
+    │                       ┌──────────┐            ┌──────────┐              │
+    │                       │ rejected │            │   paid   │              │
+    │                       └──────────┘            └──────────┘              │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+RBAC — PERMISSION MATRIX
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  ┌─────────────────┬─────────────────────────────────────────────────┐ │
+    │  │ Role            │ Permissions                                     │ │
+    │  ├─────────────────┼─────────────────────────────────────────────────┤ │
+    │  │ partner         │ proposal:create, proposal:edit, proposal:submit │ │
+    │  │ (ภาคีเครือข่าย) │ contract:view, payment:request                  │ │
+    │  ├─────────────────┼─────────────────────────────────────────────────┤ │
+    │  │ academic        │ proposal:view, screening:create, screening:edit │ │
+    │  │ (นักวิชาการ)    │ payment:view                                    │ │
+    │  ├─────────────────┼─────────────────────────────────────────────────┤ │
+    │  │ approver        │ approval:create, approval:edit                  │ │
+    │  │ (ผู้อนุมัติ)     │ contract:approve, payment:approve               │ │
+    │  ├─────────────────┼─────────────────────────────────────────────────┤ │
+    │  │ contract_center │ contract:create, contract:edit, contract:sign   │ │
+    │  │ (ศูนย์สัญญา)    │                                                 │ │
+    │  ├─────────────────┼─────────────────────────────────────────────────┤ │
+    │  │ legal           │ payment:review, contract:review                 │ │
+    │  │ (กฎหมาย)        │                                                 │ │
+    │  └─────────────────┴─────────────────────────────────────────────────┘ │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                                    END
+================================================================================
+
+Demo Granting System — Layers Detail
+Created: 2026-02-01
+"ระบบบริหารจัดการทุน — Full-Stack Architecture"
+

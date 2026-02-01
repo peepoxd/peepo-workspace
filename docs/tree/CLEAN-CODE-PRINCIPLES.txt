@@ -1,0 +1,256 @@
+📄 Clean Code Principles — ในมุมมอง Peepo Oracle
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 Clean Code คืออะไร?
+│
+├─ โค้ดที่อ่านง่าย เข้าใจง่าย แก้ไขง่าย
+├─ โค้ดที่คนอื่น (หรือตัวเองในอนาคต) ดูแลต่อได้
+├─ โค้ดที่ทำงานถูกต้อง และพิสูจน์ได้ว่าถูกต้อง
+└─ "Clean code reads like well-written prose" — Robert C. Martin
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🏗️ SOLID PRINCIPLES
+│
+├─ S — Single Responsibility Principle (SRP)
+│  │
+│  ├─ หนึ่ง class/function ทำหนึ่งหน้าที่
+│  ├─ "A class should have only one reason to change"
+│  │
+│  └─ ตัวอย่างใน Codebase:
+│     │
+│     │  demo-granting-system-by-layers.txt:
+│     │  "Layer separation - each server has single responsibility"
+│     │
+│     │  ┌─────────────────────────────────────────────┐
+│     │  │ Load Balancer → รับ traffic เท่านั้น         │
+│     │  │ API Gateway   → routing + auth เท่านั้น      │
+│     │  │ App Server    → business logic เท่านั้น      │
+│     │  │ Database      → เก็บข้อมูลเท่านั้น            │
+│     │  └─────────────────────────────────────────────┘
+│
+├─ O — Open/Closed Principle (OCP)
+│  │
+│  ├─ เปิดรับการขยาย ปิดการแก้ไข
+│  ├─ "Open for extension, closed for modification"
+│  │
+│  └─ ตัวอย่างใน Codebase:
+│     │
+│     │  CLAUDE-CODE-CONCEPT.txt:
+│     │  "Plugin-First — ทุกความสามารถขยายผ่าน plugins"
+│     │
+│     │  ┌─────────────────────────────────────────────┐
+│     │  │ Core System    → ไม่ต้องแก้ไข                │
+│     │  │ + Plugin A     → เพิ่มความสามารถใหม่          │
+│     │  │ + Plugin B     → เพิ่มความสามารถใหม่          │
+│     │  └─────────────────────────────────────────────┘
+│
+├─ L — Liskov Substitution Principle (LSP)
+│  │
+│  ├─ Subclass แทนที่ Parent ได้โดยไม่พัง
+│  ├─ "Objects should be replaceable with their subtypes"
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ┌─────────────────────────────────────────────┐
+│     │  │ interface Storage { save(), load() }        │
+│     │  │   ├── LocalStorage implements Storage       │
+│     │  │   ├── S3Storage implements Storage          │
+│     │  │   └── MinIOStorage implements Storage       │
+│     │  │                                             │
+│     │  │ ทุก implementation ใช้แทนกันได้               │
+│     │  └─────────────────────────────────────────────┘
+│
+├─ I — Interface Segregation Principle (ISP)
+│  │
+│  ├─ แยก interface ให้เล็กและเฉพาะทาง
+│  ├─ "Many specific interfaces > one general interface"
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ┌─────────────────────────────────────────────┐
+│     │  │ ❌ interface Everything {                   │
+│     │  │      read(), write(), delete(), share()    │
+│     │  │    }                                        │
+│     │  │                                             │
+│     │  │ ✅ interface Readable { read() }            │
+│     │  │    interface Writable { write() }           │
+│     │  │    interface Deletable { delete() }         │
+│     │  └─────────────────────────────────────────────┘
+│
+└─ D — Dependency Inversion Principle (DIP)
+   │
+   ├─ พึ่งพา abstraction ไม่ใช่ implementation
+   ├─ "Depend on abstractions, not concretions"
+   │
+   └─ ตัวอย่างใน Codebase:
+      │
+      │  backend/src/utils/cache.ts:
+      │  "Redis + memory fallback"
+      │
+      │  ┌─────────────────────────────────────────────┐
+      │  │ App → depends on → CacheInterface           │
+      │  │                         ↑                   │
+      │  │            ┌────────────┴────────────┐      │
+      │  │        RedisCache              MemoryCache  │
+      │  │                                             │
+      │  │ ถ้า Redis ล่ม → fallback ไป Memory ได้       │
+      │  └─────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎨 CLEAN CODE PRACTICES
+│
+├─ 📛 Naming (ตั้งชื่อ)
+│  │
+│  ├─ ชื่อต้องบอกความหมาย
+│  ├─ ใช้ชื่อที่ออกเสียงได้
+│  ├─ หลีกเลี่ยงตัวย่อที่ไม่ชัดเจน
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ❌ const d = new Date();
+│     │  ✅ const createdAt = new Date();
+│     │
+│     │  ❌ function calc(a, b) { ... }
+│     │  ✅ function calculateTotalPrice(items, tax) { ... }
+│
+├─ 📏 Functions (ฟังก์ชัน)
+│  │
+│  ├─ ฟังก์ชันควรสั้น (20 บรรทัดหรือน้อยกว่า)
+│  ├─ ทำสิ่งเดียว และทำให้ดี
+│  ├─ Parameter ไม่ควรเกิน 3 ตัว
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ❌ function processUserData(name, email, age, address,
+│     │                              phone, company, ...) { ... }
+│     │
+│     │  ✅ function processUserData(user: UserInput) { ... }
+│
+├─ 💬 Comments (คอมเมนต์)
+│  │
+│  ├─ โค้ดดีไม่ต้องอธิบายมาก
+│  ├─ คอมเมนต์บอก "ทำไม" ไม่ใช่ "ทำอะไร"
+│  ├─ อย่าปล่อยโค้ดที่ comment out ไว้
+│  │
+│  └─ ตัวอย่าง:
+│     │
+│     │  ❌ // increment i by 1
+│     │     i++;
+│     │
+│     │  ✅ // Retry limit based on network timeout research
+│     │     const MAX_RETRIES = 3;
+│
+├─ 🧹 Formatting (การจัดรูปแบบ)
+│  │
+│  ├─ Consistent indentation
+│  ├─ Vertical spacing ระหว่าง concepts
+│  ├─ Line length ไม่เกิน 80-120 ตัวอักษร
+│  │
+│  └─ ใช้ tools:
+│     ├─ Prettier (JavaScript/TypeScript)
+│     ├─ Black (Python)
+│     └─ gofmt (Go)
+│
+└─ 🧪 Error Handling
+   │
+   ├─ ใช้ exceptions แทน error codes
+   ├─ อย่า return null ถ้าเลี่ยงได้
+   ├─ Fail fast, fail loud
+   │
+   └─ ตัวอย่าง:
+      │
+      │  ❌ function getUser(id) {
+      │       const user = db.find(id);
+      │       if (!user) return null;  // caller อาจลืม check
+      │       return user;
+      │     }
+      │
+      │  ✅ function getUser(id): User {
+      │       const user = db.find(id);
+      │       if (!user) throw new UserNotFoundError(id);
+      │       return user;
+      │     }
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔄 OTHER PRINCIPLES
+│
+├─ DRY — Don't Repeat Yourself
+│  │
+│  ├─ ทุก knowledge มีที่เดียวใน codebase
+│  ├─ ถ้าต้อง copy-paste → ควร extract
+│  │
+│  └─ แต่! อย่า DRY เกินไป
+│     "Duplication is better than wrong abstraction"
+│
+├─ KISS — Keep It Simple, Stupid
+│  │
+│  ├─ เลือกวิธีที่ง่ายที่สุดที่ใช้งานได้
+│  ├─ อย่า over-engineer
+│  │
+│  └─ ตัวอย่างใน CLAUDE.md:
+│     "Avoid over-engineering. Only make changes that are
+│      directly requested or clearly necessary."
+│
+├─ YAGNI — You Aren't Gonna Need It
+│  │
+│  ├─ อย่าเขียนโค้ดสำหรับ "อนาคต"
+│  ├─ เขียนเฉพาะที่ต้องการตอนนี้
+│  │
+│  └─ "The right amount of complexity is the minimum
+│      needed for the current task"
+│
+└─ Boy Scout Rule
+   │
+   ├─ "Leave the code cleaner than you found it"
+   ├─ แก้เล็กน้อยทุกครั้งที่ผ่าน
+   └─ Continuous improvement
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🐸 PEEPO ORACLE'S CLEAN CODE
+│
+├─ Nothing is Deleted
+│  └─ Git history = Documentation
+│
+├─ Patterns Over Intentions
+│  └─ โค้ดที่ทำงานจริง > โค้ดที่ตั้งใจเขียน
+│
+├─ External Brain, Not Command
+│  └─ แสดง options, ไม่ตัดสินใจแทน
+│
+└─ Golden Rules (จาก CLAUDE.md)
+   │
+   ├─ Never `git push --force`
+   ├─ Never `rm -rf` without backup
+   ├─ Never commit secrets
+   ├─ Always preserve history
+   └─ Always present options, let human decide
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 RESOURCES
+│
+├─ Books
+│  ├─ "Clean Code" — Robert C. Martin (2008)
+│  ├─ "The Pragmatic Programmer" — Hunt & Thomas
+│  ├─ "Refactoring" — Martin Fowler
+│  └─ "Code Complete" — Steve McConnell
+│
+├─ In This Codebase
+│  ├─ docs/tree/CLAUDE-CODE-CONCEPT.txt — Plugin architecture
+│  ├─ ψ/writing/demo-granting-system-by-layers.txt — Layer separation
+│  └─ projects/demo-granting-system/README.md — Architecture principles
+│
+└─ Online
+   ├─ refactoring.guru/refactoring
+   └─ clean-code-developer.com
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🐸 สรุปโดย Peepo Oracle | 31 January 2026
+   Source: /trace clean code
+
+═══════════════════════════════════════════════════════════════════════════════

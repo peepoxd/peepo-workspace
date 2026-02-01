@@ -1,0 +1,409 @@
+================================================================================
+                    DEMO GRANTING SYSTEM - TECHNOLOGY STACK
+================================================================================
+                          สรุปเทคโนโลยีในแต่ละ Layer
+================================================================================
+
+โปรเจคนี้เป็นระบบบริหารจัดการทุน (Granting System) แบบ Full-Stack
+ออกแบบเป็น Multi-Layer Architecture สำหรับ Demo/Production Ready
+
+================================================================================
+                              ARCHITECTURE OVERVIEW
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                        [Layer 1: Client]                        │
+    │                     Browser / Mobile App                        │
+    └─────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                  [Layer 2: Load Balancer]                       │
+    │                         Traefik                                 │
+    └─────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    ▼                               ▼
+    ┌───────────────────────────┐   ┌───────────────────────────────┐
+    │   [Layer 3: Web Server]   │   │  [Layer 4: Application]       │
+    │         Nginx             │   │     Node.js + Express         │
+    │    (Static Files)         │   │        (REST API)             │
+    └───────────────────────────┘   └───────────────────────────────┘
+                                                    │
+                    ┌───────────────┬───────────────┼───────────────┐
+                    ▼               ▼               ▼               ▼
+    ┌───────────────────┐ ┌─────────────────┐ ┌─────────────────────┐
+    │  [Layer 5a]       │ │   [Layer 5b]    │ │    [Layer 5c]       │
+    │    Redis          │ │   PostgreSQL    │ │      MinIO          │
+    │   (Cache)         │ │   (Database)    │ │   (File Storage)    │
+    └───────────────────┘ └─────────────────┘ └─────────────────────┘
+
+
+================================================================================
+                          LAYER 1: FRONTEND (CLIENT)
+================================================================================
+
+ตำแหน่ง: frontend/
+ภาษา: TypeScript
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ React               │ ^18.2.0    │ UI Library แบบ Component-Based           │
+│                     │            │ - ใช้ Virtual DOM สำหรับ render ที่เร็ว    │
+│                     │            │ - Declarative UI ง่ายต่อการ maintain      │
+│                     │            │ - Reusable components                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Vite                │ ^5.0.8     │ Build Tool และ Dev Server                │
+│                     │            │ - Hot Module Replacement (HMR) ไวมาก      │
+│                     │            │ - ESBuild สำหรับ bundling ที่เร็ว          │
+│                     │            │ - Dev proxy สำหรับ forward API requests   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ TypeScript          │ ^5.2.2     │ Type-safe JavaScript                     │
+│                     │            │ - Static type checking                    │
+│                     │            │ - Better IDE support                      │
+│                     │            │ - ลด runtime errors                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ TailwindCSS         │ ^3.4.0     │ Utility-first CSS Framework              │
+│                     │            │ - เขียน CSS ใน className โดยตรง           │
+│                     │            │ - ไม่ต้องเขียน CSS files แยก              │
+│                     │            │ - Purge unused CSS ใน production          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ React Router DOM    │ ^6.21.1    │ Client-side Routing                      │
+│                     │            │ - Single Page Application (SPA)           │
+│                     │            │ - Declarative routing                     │
+│                     │            │ - Nested routes support                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Zustand             │ ^4.4.7     │ State Management                         │
+│                     │            │ - Lightweight alternative to Redux        │
+│                     │            │ - ไม่ต้อง boilerplate เยอะ                │
+│                     │            │ - Persist state ได้ง่าย                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ TanStack Query      │ ^5.17.0    │ Server State Management                  │
+│ (React Query)       │            │ - Caching API responses อัตโนมัติ         │
+│                     │            │ - Background refetching                   │
+│                     │            │ - Loading/Error states handling           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Axios               │ ^1.6.3     │ HTTP Client                              │
+│                     │            │ - Promise-based API calls                 │
+│                     │            │ - Interceptors สำหรับ auth token          │
+│                     │            │ - Error handling ที่ดี                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Lucide React        │ ^0.303.0   │ Icon Library                             │
+│                     │            │ - SVG icons ที่ lightweight               │
+│                     │            │ - Tree-shakeable                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                        LAYER 2: LOAD BALANCER / REVERSE PROXY
+================================================================================
+
+ตำแหน่ง: docker-compose.yml (traefik service)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Traefik             │ v2.10      │ Cloud-Native Reverse Proxy               │
+│                     │            │ - Auto-discovery จาก Docker labels        │
+│                     │            │ - Load balancing ระหว่าง containers       │
+│                     │            │ - Route /api → backend, / → nginx        │
+│                     │            │ - SSL/TLS termination (production)        │
+│                     │            │ - Dashboard สำหรับ monitoring             │
+│                     │            │                                           │
+│                     │            │ Routing Rules:                            │
+│                     │            │   localhost/     → Nginx (frontend)      │
+│                     │            │   localhost/api  → Backend (Express)     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          LAYER 3: WEB SERVER (STATIC)
+================================================================================
+
+ตำแหน่ง: docker-compose.yml (nginx service)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Nginx               │ alpine     │ High-Performance Web Server              │
+│                     │            │ - Serve static files (HTML, JS, CSS)     │
+│                     │            │ - Gzip compression                        │
+│                     │            │ - Caching headers                         │
+│                     │            │ - Handle SPA routing (fallback to index) │
+│                     │            │ - ใช้ RAM น้อย, รองรับ concurrent สูง      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                       LAYER 4: APPLICATION SERVER (BACKEND)
+================================================================================
+
+ตำแหน่ง: backend/
+ภาษา: TypeScript
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Node.js             │ LTS        │ JavaScript Runtime                       │
+│                     │            │ - Non-blocking I/O                        │
+│                     │            │ - Event-driven architecture               │
+│                     │            │ - รองรับ concurrent requests สูง          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Express             │ ^4.18.2    │ Web Application Framework                │
+│                     │            │ - Middleware pattern                      │
+│                     │            │ - RESTful API routing                     │
+│                     │            │ - Request/Response handling               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ TypeScript          │ ^5.3.3     │ Type-safe JavaScript                     │
+│                     │            │ - Compile-time error checking             │
+│                     │            │ - Better code documentation               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ TSX                 │ ^4.7.0     │ TypeScript Execute                       │
+│                     │            │ - รัน TypeScript โดยตรงใน dev mode        │
+│                     │            │ - Hot reload สำหรับ development           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Zod                 │ ^3.22.4    │ Schema Validation                        │
+│                     │            │ - Runtime type validation                 │
+│                     │            │ - TypeScript-first                        │
+│                     │            │ - Validate request body/params            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ JWT                 │ ^9.0.2     │ JSON Web Token                           │
+│ (jsonwebtoken)      │            │ - Stateless authentication               │
+│                     │            │ - Token-based auth flow                   │
+│                     │            │ - Role-based access control (RBAC)        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ bcryptjs            │ ^2.4.3     │ Password Hashing                         │
+│                     │            │ - Secure password storage                 │
+│                     │            │ - Salt-based hashing                      │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Helmet              │ ^7.1.0     │ Security Headers                         │
+│                     │            │ - XSS protection                          │
+│                     │            │ - Content Security Policy                 │
+│                     │            │ - Hide X-Powered-By header                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ CORS                │ ^2.8.5     │ Cross-Origin Resource Sharing            │
+│                     │            │ - อนุญาต frontend เข้าถึง API             │
+│                     │            │ - Configurable origins                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Compression         │ ^1.7.4     │ Response Compression                     │
+│                     │            │ - Gzip responses                          │
+│                     │            │ - ลดขนาด bandwidth                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Pino                │ ^8.17.2    │ JSON Logger                              │
+│                     │            │ - High-performance logging                │
+│                     │            │ - Structured JSON logs                    │
+│                     │            │ - Log levels (info, warn, error)          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          LAYER 5a: CACHE SERVER
+================================================================================
+
+ตำแหน่ง: docker-compose.yml (redis service)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Redis               │ 7-alpine   │ In-Memory Data Store                     │
+│                     │            │ - Session caching                         │
+│                     │            │ - API response caching                    │
+│                     │            │ - Rate limiting storage                   │
+│                     │            │ - Pub/Sub messaging                       │
+│                     │            │ - TTL (Time-to-Live) support              │
+│                     │            │ - AOF persistence (appendonly yes)        │
+│                     │            │                                           │
+│                     │            │ Use Cases ในโปรเจค:                       │
+│                     │            │   - Cache user sessions (30 นาที)         │
+│                     │            │   - Rate limit tracking                   │
+│                     │            │   - Temporary data storage                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          LAYER 5b: DATABASE SERVER
+================================================================================
+
+ตำแหน่ง: docker-compose.yml (postgres service)
+         database/migrations/
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ PostgreSQL          │ 15-alpine  │ Relational Database (RDBMS)              │
+│                     │            │ - ACID compliant transactions             │
+│                     │            │ - JSON/JSONB support                      │
+│                     │            │ - Full-text search                        │
+│                     │            │ - Complex queries with JOINs              │
+│                     │            │                                           │
+│                     │            │ Tables หลักในโปรเจค:                       │
+│                     │            │   - users (ผู้ใช้งาน)                      │
+│                     │            │   - proposals (ข้อเสนอโครงการ)             │
+│                     │            │   - contracts (สัญญา)                     │
+│                     │            │   - payments (การเบิกจ่าย)                │
+│                     │            │   - audit_logs (ประวัติการทำงาน)          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ pg (node-postgres)  │ ^8.11.3    │ PostgreSQL Client for Node.js            │
+│                     │            │ - Connection pooling                      │
+│                     │            │ - Parameterized queries (SQL injection)   │
+│                     │            │ - Async/await support                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          LAYER 5c: FILE STORAGE
+================================================================================
+
+ตำแหน่ง: docker-compose.yml (minio service)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ MinIO               │ latest     │ S3-Compatible Object Storage             │
+│                     │            │ - เก็บไฟล์เอกสาร (PDF, Word, Excel)       │
+│                     │            │ - S3 API compatible                       │
+│                     │            │ - Web console สำหรับจัดการ                │
+│                     │            │ - Bucket policies                         │
+│                     │            │                                           │
+│                     │            │ Use Cases ในโปรเจค:                       │
+│                     │            │   - เอกสารประกอบข้อเสนอโครงการ            │
+│                     │            │   - ไฟล์สัญญา                             │
+│                     │            │   - รายงานการเบิกจ่าย                     │
+│                     │            │   - เอกสารแนบต่างๆ                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ minio (npm)         │ ^7.1.3     │ MinIO Client for Node.js                 │
+│                     │            │ - Upload/Download files                   │
+│                     │            │ - Presigned URLs                          │
+│                     │            │ - Bucket management                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                              TESTING LAYER
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Jest                │ ^29.7.0    │ Unit & Integration Testing               │
+│                     │            │ - Test runner                             │
+│                     │            │ - Mocking framework                       │
+│                     │            │ - Code coverage                           │
+│                     │            │ - Snapshot testing                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Playwright          │ (E2E)      │ End-to-End Testing                       │
+│ (tests/e2e/)        │            │ - Browser automation                      │
+│                     │            │ - Cross-browser testing                   │
+│                     │            │ - Visual testing                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ k6                  │ (Load)     │ Load & Performance Testing               │
+│ (tests/load/)       │            │ - Smoke tests (ทดสอบ minimal load)        │
+│                     │            │ - Stress tests (หา breaking point)        │
+│                     │            │ - Peak tests (ทดสอบ max capacity)         │
+│                     │            │ - Thresholds สำหรับ pass/fail             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ ESLint              │ ^8.56.0    │ Code Linting                             │
+│                     │            │ - Static code analysis                    │
+│                     │            │ - Coding standards enforcement            │
+│                     │            │ - TypeScript support                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          INFRASTRUCTURE / DEVOPS
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ TECHNOLOGY          │ VERSION    │ รูปแบบการทำงาน / ช่วยอะไร                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Docker              │ -          │ Containerization                         │
+│                     │            │ - Consistent environments                 │
+│                     │            │ - Easy deployment                         │
+│                     │            │ - Microservices architecture              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Docker Compose      │ 3.8        │ Multi-Container Orchestration            │
+│                     │            │ - Define all services in one file         │
+│                     │            │ - Networking between containers           │
+│                     │            │ - Volume management                       │
+│                     │            │ - Health checks                           │
+│                     │            │ - Dependency ordering                     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                            DATA FLOW SUMMARY
+================================================================================
+
+1. USER REQUEST
+   Browser → Traefik (port 80)
+
+2. ROUTING
+   /api/*   → Backend (Express, port 3000)
+   /*       → Nginx → Static files (React SPA)
+
+3. BACKEND PROCESSING
+   Express → Middleware (auth, validation) → Route Handler
+
+4. DATA ACCESS
+   Handler → Redis (cache check)
+          → PostgreSQL (query)
+          → MinIO (file operations)
+
+5. RESPONSE
+   Handler → Middleware → Express → Traefik → Browser
+
+
+================================================================================
+                              PORTS SUMMARY
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ SERVICE             │ INTERNAL   │ EXTERNAL   │ หมายเหตุ                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ Traefik             │ 80         │ 80         │ Main entry point             │
+│ Traefik Dashboard   │ 8080       │ 8080       │ Monitoring UI                │
+│ Nginx               │ 80         │ -          │ ผ่าน Traefik                  │
+│ Backend             │ 3000       │ -          │ ผ่าน Traefik                  │
+│ Frontend (Dev)      │ 5173       │ 5173       │ Vite dev server              │
+│ PostgreSQL          │ 5432       │ -          │ Internal only                │
+│ Redis               │ 6379       │ -          │ Internal only                │
+│ MinIO API           │ 9000       │ 9000       │ S3 compatible API            │
+│ MinIO Console       │ 9001       │ 9001       │ Web UI                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                              SECURITY FEATURES
+================================================================================
+
+1. Authentication: JWT tokens (jsonwebtoken)
+2. Password Hashing: bcryptjs with salt
+3. Input Validation: Zod schemas
+4. Security Headers: Helmet middleware
+5. CORS: Configured origins
+6. Rate Limiting: Redis-backed rate limiter
+7. SQL Injection Prevention: Parameterized queries (pg)
+
+
+================================================================================
+                           ROLE-BASED ACCESS CONTROL
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ROLE                │ THAI NAME        │ PERMISSIONS                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ partner             │ ภาคีเครือข่าย    │ ยื่นข้อเสนอโครงการ                  │
+│ academic            │ นักวิชาการ       │ คัดกรองและกลั่นกรอง                 │
+│ approver            │ ผู้อนุมัติ        │ พิจารณาอนุมัติโครงการ               │
+│ contract_center     │ ศูนย์สัญญา       │ ดูแลสัญญา                          │
+│ legal               │ กฎหมาย          │ ตรวจสอบด้านกฎหมาย                  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                                  END
+================================================================================
+Generated: 2026-01-31
+Project: Demo Granting System
+================================================================================

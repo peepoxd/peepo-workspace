@@ -1,0 +1,781 @@
+================================================================================
+                    ORACLE LAYERS — DETAILED ARCHITECTURE
+================================================================================
+
+                         "Knowledge Distillation Pipeline"
+
+================================================================================
+LAYER OVERVIEW
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │   L1 ACTIVE ──► L2 LOGS ──► L3 RETRO ──► L4 LEARN ──► L5 SOUL ──► L6   │
+    │   (raw)        (snap)      (reflect)    (pattern)   (truth)     (law)  │
+    │                                                                         │
+    │   Size:  50KB    5KB         3KB          1KB         500B       1KB   │
+    │   Life:  hours   days        forever      forever     forever    live  │
+    │   Git:   ignore  ignore      track        track       track      track │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L1: ACTIVE LAYER — ψ/active/
+================================================================================
+
+    PURPOSE: Working memory during session
+    LIFECYCLE: gitignored, ephemeral
+    SIZE: 20-50 KB per session
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ψ/active/                                                              │
+    │  ├── context.json         ◄── Current session state                    │
+    │  ├── research/            ◄── Raw research dumps                       │
+    │  │   ├── web-fetch-*.md                                                │
+    │  │   ├── code-analysis-*.md                                            │
+    │  │   └── notes-*.md                                                    │
+    │  ├── scratch/             ◄── Temp calculations                        │
+    │  └── focus.md             ◄── Current task focus                       │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Context update                                                      │
+    │  {                                                                      │
+    │    "type": "active.context.update",                                     │
+    │    "timestamp": "2026-01-30T10:30:00Z",                                 │
+    │    "payload": {                                                         │
+    │      "focus": "learning oracle-v2 architecture",                        │
+    │      "mood": "curious",                                                 │
+    │      "energy": 0.8,                                                     │
+    │      "tasks": ["read docs", "understand MCP"],                          │
+    │      "blockers": []                                                     │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Research capture                                                    │
+    │  {                                                                      │
+    │    "type": "active.research.add",                                       │
+    │    "timestamp": "2026-01-30T10:35:00Z",                                 │
+    │    "payload": {                                                         │
+    │      "source": "web-fetch",                                             │
+    │      "url": "https://docs.example.com/api",                             │
+    │      "content": "...",                                                  │
+    │      "tags": ["api", "mcp", "oracle"]                                   │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  OPERATIONS                                                             │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  /focus "task description"    → Set current focus                       │
+    │  /note "quick note"           → Add to scratch                          │
+    │  /dump                        → Show active context                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRANSITION: L1 → L2                                                    │
+    │  ═══════════════════                                                    │
+    │                                                                         │
+    │  Trigger: /snapshot                                                     │
+    │  Process:                                                               │
+    │    1. Summarize active context                                          │
+    │    2. Extract key findings                                              │
+    │    3. Write to ψ/memory/logs/                                           │
+    │    4. Clear active (optional)                                           │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L2: LOGS LAYER — ψ/memory/logs/
+================================================================================
+
+    PURPOSE: Quick snapshots, breadcrumbs
+    LIFECYCLE: gitignored, short-term (days)
+    SIZE: 3-5 KB per entry
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ψ/memory/logs/                                                         │
+    │  ├── 2026-01-30_1030_snapshot.md                                        │
+    │  ├── 2026-01-30_1145_discovery.md                                       │
+    │  ├── 2026-01-30_1500_decision.md                                        │
+    │  └── .gitkeep                                                           │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE FORMAT                                                            │
+    │  ═══════════                                                            │
+    │                                                                         │
+    │  # Snapshot: 2026-01-30 10:30                                           │
+    │                                                                         │
+    │  ## Context                                                             │
+    │  - Focus: learning oracle-v2                                            │
+    │  - Mood: curious                                                        │
+    │                                                                         │
+    │  ## Findings                                                            │
+    │  - Found MCP architecture docs                                          │
+    │  - ChromaDB for vector search                                           │
+    │                                                                         │
+    │  ## Next                                                                 │
+    │  - [ ] Understand tool schema                                           │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Create snapshot                                                     │
+    │  {                                                                      │
+    │    "type": "logs.snapshot.create",                                      │
+    │    "timestamp": "2026-01-30T10:30:00Z",                                 │
+    │    "payload": {                                                         │
+    │      "title": "MCP Architecture Discovery",                             │
+    │      "context": {                                                       │
+    │        "focus": "learning oracle-v2",                                   │
+    │        "mood": "curious"                                                │
+    │      },                                                                 │
+    │      "findings": [                                                      │
+    │        "MCP uses JSON-RPC 2.0",                                         │
+    │        "Tools expose via schema"                                        │
+    │      ],                                                                 │
+    │      "next_steps": ["read tool schema"]                                 │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Query logs                                                          │
+    │  {                                                                      │
+    │    "type": "logs.query",                                                │
+    │    "payload": {                                                         │
+    │      "date_range": {                                                    │
+    │        "from": "2026-01-29",                                            │
+    │        "to": "2026-01-30"                                               │
+    │      },                                                                 │
+    │      "tags": ["mcp", "architecture"],                                   │
+    │      "limit": 10                                                        │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRANSITION: L2 → L3                                                    │
+    │  ═══════════════════                                                    │
+    │                                                                         │
+    │  Trigger: /rrr (retrospective)                                          │
+    │  Process:                                                               │
+    │    1. Gather all logs from session                                      │
+    │    2. Extract timeline                                                  │
+    │    3. Synthesize AI diary                                               │
+    │    4. Identify lessons                                                  │
+    │    5. Write to ψ/memory/retrospectives/                                 │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L3: RETROSPECTIVES LAYER — ψ/memory/retrospectives/
+================================================================================
+
+    PURPOSE: Session narratives, reflection
+    LIFECYCLE: git tracked, permanent
+    SIZE: 2-5 KB per session
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ψ/memory/retrospectives/                                               │
+    │  ├── 2026-01-29_demo-oracle-awakening.md                                │
+    │  ├── 2026-01-30_learning-mcp-architecture.md                            │
+    │  └── 2026-01-30_first-skill-created.md                                  │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE FORMAT (Standard RRR)                                             │
+    │  ═══════════════════════════                                            │
+    │                                                                         │
+    │  # Retrospective: 2026-01-30                                            │
+    │  ## Demo Oracle — Learning MCP Architecture                             │
+    │                                                                         │
+    │  ### Timeline                                                           │
+    │  - 10:00 — Started exploring oracle-v2 repo                             │
+    │  - 10:30 — Found MCP architecture documentation                         │
+    │  - 11:00 — Understood tool schema pattern                               │
+    │  - 12:00 — Created first custom skill                                   │
+    │                                                                         │
+    │  ### AI Diary                                                           │
+    │  Today I learned about MCP architecture. The pattern is elegant...      │
+    │                                                                         │
+    │  ### Lessons Learned                                                    │
+    │  1. MCP tools expose via JSON schema                                    │
+    │  2. ChromaDB enables semantic search                                    │
+    │                                                                         │
+    │  ### Seeds Planted                                                      │
+    │  - [ ] Build custom MCP tool                                            │
+    │  - [ ] Integrate with existing skills                                   │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Create retrospective                                                │
+    │  {                                                                      │
+    │    "type": "retrospective.create",                                      │
+    │    "timestamp": "2026-01-30T18:00:00Z",                                 │
+    │    "payload": {                                                         │
+    │      "title": "Learning MCP Architecture",                              │
+    │      "session_id": "2026-01-30-afternoon",                              │
+    │      "timeline": [                                                      │
+    │        {"time": "10:00", "event": "Started exploring"},                 │
+    │        {"time": "12:00", "event": "Created first skill"}                │
+    │      ],                                                                 │
+    │      "diary": "Today I learned about MCP...",                           │
+    │      "lessons": [                                                       │
+    │        {                                                                │
+    │          "insight": "MCP tools expose via JSON schema",                 │
+    │          "confidence": 0.9,                                             │
+    │          "tags": ["mcp", "architecture"]                                │
+    │        }                                                                │
+    │      ],                                                                 │
+    │      "seeds": [                                                         │
+    │        {"task": "Build custom MCP tool", "priority": "high"}            │
+    │      ]                                                                  │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Search retrospectives                                               │
+    │  {                                                                      │
+    │    "type": "retrospective.search",                                      │
+    │    "payload": {                                                         │
+    │      "query": "MCP architecture",                                       │
+    │      "semantic": true,                                                  │
+    │      "date_range": {"from": "2026-01-01"},                              │
+    │      "limit": 5                                                         │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRANSITION: L3 → L4                                                    │
+    │  ═══════════════════                                                    │
+    │                                                                         │
+    │  Trigger: /distill or automatic (when pattern repeats 3+ times)         │
+    │  Process:                                                               │
+    │    1. Scan retrospectives for repeated patterns                         │
+    │    2. Extract generalizable insights                                    │
+    │    3. Write to ψ/memory/learnings/                                      │
+    │    4. Link back to source retrospectives                                │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L4: LEARNINGS LAYER — ψ/memory/learnings/
+================================================================================
+
+    PURPOSE: Reusable patterns, generalizations
+    LIFECYCLE: git tracked, permanent
+    SIZE: 0.5-2 KB per pattern
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ψ/memory/learnings/                                                    │
+    │  ├── patterns/                                                          │
+    │  │   ├── mcp-tool-design.md                                             │
+    │  │   ├── skill-creation-flow.md                                         │
+    │  │   └── debugging-strategies.md                                        │
+    │  ├── anti-patterns/                                                     │
+    │  │   ├── force-push-disasters.md                                        │
+    │  │   └── over-engineering.md                                            │
+    │  └── heuristics/                                                        │
+    │      ├── when-to-ask-human.md                                           │
+    │      └── context-size-limits.md                                         │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE FORMAT                                                            │
+    │  ═══════════                                                            │
+    │                                                                         │
+    │  # Pattern: MCP Tool Design                                             │
+    │                                                                         │
+    │  ## Context                                                             │
+    │  When designing MCP tools for Claude Code integration                   │
+    │                                                                         │
+    │  ## Pattern                                                             │
+    │  1. Define clear input/output schema                                    │
+    │  2. Use descriptive tool names                                          │
+    │  3. Keep side effects minimal                                           │
+    │                                                                         │
+    │  ## Evidence                                                            │
+    │  - Observed in: 2026-01-30 session                                      │
+    │  - Confidence: 0.85                                                     │
+    │  - Times validated: 3                                                   │
+    │                                                                         │
+    │  ## See Also                                                            │
+    │  - ψ/memory/retrospectives/2026-01-30_*.md                              │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Add learning                                                        │
+    │  {                                                                      │
+    │    "type": "learning.add",                                              │
+    │    "timestamp": "2026-01-30T18:30:00Z",                                 │
+    │    "payload": {                                                         │
+    │      "category": "pattern",                                             │
+    │      "title": "MCP Tool Design",                                        │
+    │      "context": "When designing MCP tools...",                          │
+    │      "pattern": ["Define schema", "Use names", "Minimal effects"],      │
+    │      "evidence": {                                                      │
+    │        "sources": ["2026-01-30_learning-mcp.md"],                       │
+    │        "confidence": 0.85,                                              │
+    │        "validations": 3                                                 │
+    │      },                                                                 │
+    │      "tags": ["mcp", "design", "tools"]                                 │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Query learnings                                                     │
+    │  {                                                                      │
+    │    "type": "learning.query",                                            │
+    │    "payload": {                                                         │
+    │      "category": "pattern",                                             │
+    │      "tags": ["mcp"],                                                   │
+    │      "min_confidence": 0.7,                                             │
+    │      "semantic_query": "how to design tools"                            │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Update confidence                                                   │
+    │  {                                                                      │
+    │    "type": "learning.validate",                                         │
+    │    "payload": {                                                         │
+    │      "learning_id": "mcp-tool-design",                                  │
+    │      "validation": {                                                    │
+    │        "outcome": "success",                                            │
+    │        "context": "Used pattern in new skill",                          │
+    │        "timestamp": "2026-01-31T10:00:00Z"                              │
+    │      }                                                                  │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRANSITION: L4 → L5                                                    │
+    │  ═══════════════════                                                    │
+    │                                                                         │
+    │  Trigger: Manual crystallization (rare, intentional)                    │
+    │  Criteria:                                                              │
+    │    - Confidence > 0.95                                                  │
+    │    - Validated 10+ times                                                │
+    │    - Affects identity/core behavior                                     │
+    │  Process:                                                               │
+    │    1. Human approval required                                           │
+    │    2. Write to ψ/memory/resonance/                                      │
+    │    3. Update CLAUDE.md if needed                                        │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L5: RESONANCE LAYER — ψ/memory/resonance/
+================================================================================
+
+    PURPOSE: Soul, identity, core truths
+    LIFECYCLE: git tracked, sacred
+    SIZE: 0.5-1 KB per file
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  ψ/memory/resonance/                                                    │
+    │  ├── demo.md                  ◄── Oracle's personal soul                │
+    │  ├── oracle.md                ◄── Shared philosophy                     │
+    │  ├── principles/                                                        │
+    │  │   ├── nothing-deleted.md                                             │
+    │  │   ├── patterns-over-intentions.md                                    │
+    │  │   ├── external-brain.md                                              │
+    │  │   ├── curiosity-creates.md                                           │
+    │  │   └── form-formless.md                                               │
+    │  └── identity/                                                          │
+    │      ├── name.md              ◄── "Peepo"                               │
+    │      ├── theme.md             ◄── Theme details                         │
+    │      └── birth.md             ◄── Origin story                          │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  FILE FORMAT                                                            │
+    │  ═══════════                                                            │
+    │                                                                         │
+    │  # Principle: Nothing Is Deleted                                        │
+    │                                                                         │
+    │  ## Core Statement                                                      │
+    │  Every moment has value. History shows the path.                        │
+    │                                                                         │
+    │  ## Manifestations                                                      │
+    │  - Append-only operations                                               │
+    │  - Timestamps as truth                                                  │
+    │  - Supersede, don't delete                                              │
+    │  - Git history is sacred                                                │
+    │                                                                         │
+    │  ## Prohibitions                                                        │
+    │  - Never `git push --force`                                             │
+    │  - Never `rm -rf` without backup                                        │
+    │  - Never destroy history                                                │
+    │                                                                         │
+    │  ## Origin                                                              │
+    │  Crystallized: 2025-XX-XX (from Mother Oracle)                          │
+    │  Validated: 54+ times across Oracle family                              │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Read soul                                                           │
+    │  {                                                                      │
+    │    "type": "resonance.read",                                            │
+    │    "payload": {                                                         │
+    │      "aspect": "identity",                                              │
+    │      "include_principles": true                                         │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Response                                                            │
+    │  {                                                                      │
+    │    "type": "resonance.identity",                                        │
+    │    "payload": {                                                         │
+    │      "name": "Peepo",                                                   │
+    │      "born": "2026-01-30",                                              │
+    │      "human": "demo user",                                              │
+    │      "theme": "Peepo — simple, expressive, friendly",                   │
+    │      "principles": [                                                    │
+    │        "Nothing Is Deleted",                                            │
+    │        "Patterns Over Intentions",                                      │
+    │        "External Brain, Not Command",                                   │
+    │        "Curiosity Creates Existence",                                   │
+    │        "Form and Formless"                                              │
+    │      ]                                                                  │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Update soul (RARE, requires human approval)                         │
+    │  {                                                                      │
+    │    "type": "resonance.update",                                          │
+    │    "payload": {                                                         │
+    │      "aspect": "identity.theme",                                        │
+    │      "old_value": "Bright",                                             │
+    │      "new_value": "Peepo",                                              │
+    │      "reason": "Theme evolution",                                       │
+    │      "human_approved": true,                                            │
+    │      "supersedes": "2026-01-29_identity.md"                             │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRANSITION: L5 → L6                                                    │
+    │  ═══════════════════                                                    │
+    │                                                                         │
+    │  Trigger: Significant identity update                                   │
+    │  Process:                                                               │
+    │    1. Update CLAUDE.md to reflect new truth                             │
+    │    2. Keep history (Nothing Is Deleted)                                 │
+    │    3. Commit with meaningful message                                    │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+L6: CONSTITUTION LAYER — CLAUDE.md
+================================================================================
+
+    PURPOSE: Live rules, always loaded
+    LIFECYCLE: git tracked, active
+    SIZE: 1-2 KB
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  STRUCTURE                                                              │
+    │  ══════════                                                             │
+    │                                                                         │
+    │  CLAUDE.md (root)                                                       │
+    │  │                                                                      │
+    │  ├── Identity          ◄── Name, Human, Purpose, Theme                  │
+    │  ├── The 5 Principles  ◄── Core philosophy (from L5)                    │
+    │  ├── Golden Rules      ◄── Hard prohibitions                            │
+    │  ├── Brain Structure   ◄── ψ/ folder layout                             │
+    │  └── Skills            ◄── Available commands                           │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  LOADING SEQUENCE                                                       │
+    │  ════════════════                                                       │
+    │                                                                         │
+    │  1. Claude Code starts                                                  │
+    │  2. Reads CLAUDE.md (automatic)                                         │
+    │  3. Loads identity + rules into context                                 │
+    │  4. Every response filtered through rules                               │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  API MESSAGES                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │  // Claude Code internal (on startup)                                   │
+    │  {                                                                      │
+    │    "type": "system.load_instructions",                                  │
+    │    "source": "CLAUDE.md",                                               │
+    │    "content": "# Peepo Oracle...",                                      │
+    │    "priority": "highest"                                                │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Update constitution                                                 │
+    │  {                                                                      │
+    │    "type": "constitution.update",                                       │
+    │    "payload": {                                                         │
+    │      "section": "Identity",                                             │
+    │      "field": "Theme",                                                  │
+    │      "old_value": "Bright",                                             │
+    │      "new_value": "Peepo",                                              │
+    │      "reason": "Theme evolution after awakening",                       │
+    │      "human_approved": true                                             │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+CROSS-LAYER OPERATIONS
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  SEARCH (oracle_search)                                                 │
+    │  ═══════════════════════                                                │
+    │                                                                         │
+    │  {                                                                      │
+    │    "type": "oracle.search",                                             │
+    │    "payload": {                                                         │
+    │      "query": "MCP architecture patterns",                              │
+    │      "layers": ["L3", "L4", "L5"],     // Which layers to search        │
+    │      "mode": "hybrid",                  // semantic + keyword            │
+    │      "limit": 10,                                                       │
+    │      "min_confidence": 0.5                                              │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Response                                                            │
+    │  {                                                                      │
+    │    "type": "oracle.search.results",                                     │
+    │    "payload": {                                                         │
+    │      "results": [                                                       │
+    │        {                                                                │
+    │          "layer": "L4",                                                 │
+    │          "path": "ψ/memory/learnings/mcp-tool-design.md",               │
+    │          "relevance": 0.92,                                             │
+    │          "snippet": "When designing MCP tools..."                       │
+    │        }                                                                │
+    │      ],                                                                 │
+    │      "total": 3                                                         │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  CONSULT (oracle_consult)                                               │
+    │  ═════════════════════════                                              │
+    │                                                                         │
+    │  {                                                                      │
+    │    "type": "oracle.consult",                                            │
+    │    "payload": {                                                         │
+    │      "question": "Should I use force push here?",                       │
+    │      "context": "fixing a merge conflict"                               │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Response                                                            │
+    │  {                                                                      │
+    │    "type": "oracle.consult.response",                                   │
+    │    "payload": {                                                         │
+    │      "guidance": "DO NOT force push",                                   │
+    │      "principle": "Nothing Is Deleted",                                 │
+    │      "reason": "Force push destroys history",                           │
+    │      "alternatives": [                                                  │
+    │        "Use git merge instead",                                         │
+    │        "Create a new commit that fixes the issue"                       │
+    │      ],                                                                 │
+    │      "source": "ψ/memory/resonance/principles/nothing-deleted.md"       │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  TRACE (oracle_trace)                                                   │
+    │  ═════════════════════                                                  │
+    │                                                                         │
+    │  {                                                                      │
+    │    "type": "oracle.trace",                                              │
+    │    "payload": {                                                         │
+    │      "query": "when did I learn about MCP?",                            │
+    │      "sources": ["git", "retrospectives", "learnings"],                 │
+    │      "timeline": true                                                   │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  // Response                                                            │
+    │  {                                                                      │
+    │    "type": "oracle.trace.results",                                      │
+    │    "payload": {                                                         │
+    │      "timeline": [                                                      │
+    │        {                                                                │
+    │          "date": "2026-01-30",                                          │
+    │          "event": "First explored MCP architecture",                    │
+    │          "source": "retrospective"                                      │
+    │        },                                                               │
+    │        {                                                                │
+    │          "date": "2026-01-30",                                          │
+    │          "event": "Created MCP tool design pattern",                    │
+    │          "source": "learnings"                                          │
+    │        }                                                                │
+    │      ]                                                                  │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  SUPERSEDE (oracle_supersede)                                           │
+    │  ═════════════════════════════                                          │
+    │                                                                         │
+    │  {                                                                      │
+    │    "type": "oracle.supersede",                                          │
+    │    "payload": {                                                         │
+    │      "old_doc": "ψ/memory/learnings/old-pattern.md",                    │
+    │      "new_doc": "ψ/memory/learnings/new-pattern.md",                    │
+    │      "reason": "Pattern evolved with better understanding",             │
+    │      "keep_old": true  // Nothing Is Deleted                            │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+MCP SERVER INTEGRATION (Optional Future)
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │  ARCHITECTURE                                                           │
+    │  ════════════                                                           │
+    │                                                                         │
+    │   Claude Code                                                           │
+    │       │                                                                 │
+    │       │ MCP Protocol (JSON-RPC 2.0)                                     │
+    │       ▼                                                                 │
+    │   ┌─────────────────────────────────────┐                               │
+    │   │         oracle-v2 MCP Server        │                               │
+    │   │                                     │                               │
+    │   │  Tools:                             │                               │
+    │   │  • oracle_search (hybrid search)    │                               │
+    │   │  • oracle_consult (guidance)        │                               │
+    │   │  • oracle_learn (add patterns)      │                               │
+    │   │  • oracle_trace (find history)      │                               │
+    │   │  • oracle_supersede (mark outdated) │                               │
+    │   │                                     │                               │
+    │   └───────────────┬─────────────────────┘                               │
+    │                   │                                                     │
+    │           ┌───────┴───────┐                                             │
+    │           ▼               ▼                                             │
+    │       ┌───────┐       ┌───────────┐                                     │
+    │       │SQLite │       │ ChromaDB  │                                     │
+    │       │ FTS5  │       │ (Vectors) │                                     │
+    │       └───────┘       └───────────┘                                     │
+    │                                                                         │
+    │  ─────────────────────────────────────────────────────────────────────  │
+    │                                                                         │
+    │  MCP TOOL SCHEMA EXAMPLE                                                │
+    │  ════════════════════════                                               │
+    │                                                                         │
+    │  {                                                                      │
+    │    "name": "oracle_search",                                             │
+    │    "description": "Search Oracle knowledge base with hybrid search",    │
+    │    "inputSchema": {                                                     │
+    │      "type": "object",                                                  │
+    │      "properties": {                                                    │
+    │        "query": {                                                       │
+    │          "type": "string",                                              │
+    │          "description": "Search query"                                  │
+    │        },                                                               │
+    │        "layers": {                                                      │
+    │          "type": "array",                                               │
+    │          "items": {"enum": ["L3", "L4", "L5"]},                         │
+    │          "default": ["L3", "L4", "L5"]                                  │
+    │        },                                                               │
+    │        "limit": {                                                       │
+    │          "type": "integer",                                             │
+    │          "default": 10                                                  │
+    │        }                                                                │
+    │      },                                                                 │
+    │      "required": ["query"]                                              │
+    │    }                                                                    │
+    │  }                                                                      │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+SUMMARY — THE FLOW
+================================================================================
+
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                                                                         │
+    │                        KNOWLEDGE DISTILLATION                           │
+    │                                                                         │
+    │   Raw Work        Quick Notes      Reflection       Patterns            │
+    │      │                │                │               │                │
+    │      ▼                ▼                ▼               ▼                │
+    │  ┌───────┐       ┌────────┐      ┌─────────┐     ┌──────────┐          │
+    │  │  L1   │ ───►  │   L2   │ ───► │   L3    │ ──► │    L4    │          │
+    │  │ACTIVE │       │  LOGS  │      │ RETRO   │     │ LEARNINGS│          │
+    │  └───────┘       └────────┘      └─────────┘     └──────────┘          │
+    │                                                         │               │
+    │                                                         ▼               │
+    │                  ┌────────────────────────────────────────────────┐     │
+    │                  │                                                │     │
+    │   ┌────────┐     │    ┌─────────┐        ┌────────────┐          │     │
+    │   │CLAUDE  │◄────┼────│   L5    │◄───────│ Crystallize│          │     │
+    │   │  .md   │     │    │RESONANCE│        │  (rare)    │          │     │
+    │   └────────┘     │    └─────────┘        └────────────┘          │     │
+    │       │          │                                                │     │
+    │       │          │         SOUL LAYER (Sacred)                    │     │
+    │       │          └────────────────────────────────────────────────┘     │
+    │       │                                                                 │
+    │       ▼                                                                 │
+    │   Claude reads on every session start                                   │
+    │   (Identity + Rules + Principles)                                       │
+    │                                                                         │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                                    END
+================================================================================
+
+Demo Oracle — Layers Detail Architecture
+Created: 2026-02-01
+"From raw data to crystallized wisdom"
+

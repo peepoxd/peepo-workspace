@@ -1,0 +1,77 @@
+================================================================================
+DEMO GRANTING SYSTEM - FRONTEND STRUCTURE (BEFORE ENHANCEMENT)
+Captured: 2026-02-01
+================================================================================
+
+frontend/src/
+├── App.tsx                          # Main router (10 routes)
+├── main.tsx                         # Entry point
+├── index.css                        # Tailwind + custom styles
+├── vite-env.d.ts                    # Vite type definitions
+│
+├── components/
+│   ├── Layout.tsx                   # Main layout + navigation
+│   └── FileUpload.tsx               # Basic file upload component
+│
+├── hooks/
+│   └── useAuthStore.ts              # Zustand auth state (login/logout/persist)
+│
+├── pages/
+│   ├── LoginPage.tsx                # ✅ Login form with demo users
+│   ├── DashboardPage.tsx            # ✅ KPIs, budget charts, alerts
+│   ├── ScreeningPage.tsx            # ✅ Basic screening form
+│   ├── ApprovalPage.tsx             # ✅ Basic approval form
+│   ├── ContractsPage.tsx            # ✅ Contract list + sign
+│   ├── PaymentsPage.tsx             # ✅ Payment request + approve
+│   ├── ReportsPage.tsx              # ✅ Report list + export
+│   └── proposals/
+│       ├── ProposalsPage.tsx        # ✅ Proposal list
+│       └── ProposalFormPage.tsx     # ✅ Create/edit form
+│
+└── utils/
+    └── api.ts                       # Axios client + interceptors
+
+================================================================================
+STATISTICS (BEFORE)
+================================================================================
+
+Total Files:           17 files
+Total Lines of Code:   ~2,001 lines
+
+Pages Status:
+- LoginPage:           ✅ Complete
+- DashboardPage:       ✅ Complete (basic)
+- ProposalsPage:       ✅ Complete
+- ProposalFormPage:    ✅ Complete
+- ScreeningPage:       ✅ Basic (no history, no filters)
+- ApprovalPage:        ✅ Basic (no history, no filters)
+- ContractsPage:       ✅ Basic (no create form, no filters)
+- PaymentsPage:        ✅ Basic (no filters, no pagination)
+- ReportsPage:         ✅ Basic (static stats, no real data)
+
+Missing Features:
+- [ ] No shared UI components (Button, Input, Card, Modal, etc.)
+- [ ] No toast/notification system
+- [ ] No confirmation dialogs
+- [ ] No loading skeletons
+- [ ] No error boundary
+- [ ] No form validation display
+- [ ] No pagination component
+- [ ] No search/filter components
+- [ ] No date picker component
+- [ ] No contract creation form
+- [ ] No screening history view
+- [ ] No approval history view
+- [ ] No file preview component
+- [ ] No charts (dashboard uses plain divs)
+- [ ] No responsive mobile menu
+- [ ] No breadcrumbs
+- [ ] No empty state illustrations
+
+Component Count:
+- Layout components:   1
+- Form components:     1
+- UI components:       0
+- Utility hooks:       1
+
+================================================================================

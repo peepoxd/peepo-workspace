@@ -1,0 +1,295 @@
+📄 Interview Preparation: ศุภวิชญ์ พยัคสุโข
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 ภาพรวม 2 ระบบ
+│
+├─ ระบบที่ 1: ระบบจัดการเครือข่าย สสส.
+│  │
+│  ├─ ประเภท: Grant Management System
+│  ├─ องค์กร: สำนักงานกองทุนสนับสนุนการสร้างเสริมสุขภาพ
+│  │
+│  └─ Workflow:
+│     │
+│     │  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+│     │  │ พัฒนา    │ → │ อนุมัติ   │ → │ เบิกจ่าย  │ → │ ปิด      │
+│     │  │ ข้อเสนอ   │   │ โครงการ   │   │          │   │ โครงการ   │
+│     │  └──────────┘   └──────────┘   └──────────┘   └──────────┘
+│
+└─ ระบบที่ 2: ระบบ PCS (Production Control System)
+   │
+   ├─ ประเภท: Manufacturing/Production Management
+   ├─ ลักษณะ: ระบบควบคุมการผลิตแบบครบวงจร
+   │
+   └─ Workflow:
+      │
+      │  ┌───────┐   ┌───────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
+      │  │ Order │ → │  MRP  │ → │ Purchase │ → │Production│ → │ Shipment │
+      │  └───────┘   └───────┘   └──────────┘   └──────────┘   └──────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+👥 ผู้ใช้งาน (Users)
+│
+├─ ระบบ สสส. (5 กลุ่ม)
+│  │
+│  │  ┌─────────────────┬────────────────────────────────────┐
+│  │  │ กลุ่มผู้ใช้       │ บทบาทหลัก                          │
+│  │  ├─────────────────┼────────────────────────────────────┤
+│  │  │ ภาคีเครือข่าย    │ ยื่นข้อเสนอ, ขอเบิก, ส่งรายงาน       │
+│  │  │ นักวิชาการ       │ คัดกรอง, กลั่นกรอง, ตรวจสอบ         │
+│  │  │ ผู้อนุมัติ        │ อนุมัติโครงการ, อนุมัติเบิก           │
+│  │  │ ศูนย์สัญญา       │ จัดทำสัญญา, อนุมัติปิด              │
+│  │  │ ฝ่ายกฎหมาย      │ ให้คำปรึกษา, พิจารณายกเลิก          │
+│  │  └─────────────────┴────────────────────────────────────┘
+│
+└─ ระบบ PCS (6 กลุ่ม)
+   │
+   │  ┌─────────────────┬────────────────────────────────────┐
+   │  │ กลุ่มผู้ใช้       │ บทบาทหลัก                          │
+   │  ├─────────────────┼────────────────────────────────────┤
+   │  │ ฝ่ายขาย (Sale)  │ รับ Order, ออก Invoice             │
+   │  │ ฝ่ายวางแผน      │ MRP, Production Plan               │
+   │  │ ฝ่ายผลิต        │ Work Order, บันทึกผล                │
+   │  │ ฝ่ายจัดซื้อ      │ PR, PO, รับวัตถุดิบ                  │
+   │  │ คลังสินค้า       │ Stock IN/OUT                       │
+   │  │ ฝ่ายจัดส่ง       │ Delivery, Tracking                 │
+   │  └─────────────────┴────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🏗️ ARCHITECTURE (สถาปัตยกรรม)
+│
+├─ ระบบ สสส.
+│  │
+│  │  ┌─────────────────────────────────────────────────────┐
+│  │  │  Layer 1: Frontend (React/Vue)                     │
+│  │  ├─────────────────────────────────────────────────────┤
+│  │  │  Layer 2: API Gateway (Auth, Rate Limiting)        │
+│  │  ├─────────────────────────────────────────────────────┤
+│  │  │  Layer 3: Business Logic Services                  │
+│  │  ├─────────────────────────────────────────────────────┤
+│  │  │  Layer 4: Database (PostgreSQL + S3/MinIO)         │
+│  │  ├─────────────────────────────────────────────────────┤
+│  │  │  Layer 5: Integration (GFMIS, e-GP, SSO)           │
+│  │  └─────────────────────────────────────────────────────┘
+│  │
+│  └─ External Systems:
+│     ├─ GFMIS → ระบบบริหารการเงินการคลังภาครัฐ
+│     ├─ e-GP  → ระบบจัดซื้อจัดจ้างภาครัฐ
+│     └─ SSO   → Single Sign-On Authentication
+│
+└─ ระบบ PCS
+   │
+   │  ┌─────────────────────────────────────────────────────┐
+   │  │  Frontend (React + Handy Scanner)                  │
+   │  ├─────────────────────────────────────────────────────┤
+   │  │  API Gateway (Auth, Logging)                       │
+   │  ├─────────────────────────────────────────────────────┤
+   │  │  Business Services (Sale|MRP|Prod|Purch|Stock|Ship)│
+   │  ├─────────────────────────────────────────────────────┤
+   │  │  Database (PostgreSQL + Redis + S3)                │
+   │  ├─────────────────────────────────────────────────────┤
+   │  │  Integration (ERP, Accounting, Supplier, Logistics)│
+   │  └─────────────────────────────────────────────────────┘
+   │
+   └─ Special Features:
+      ├─ Handy Scanner → บันทึกผลผลิตในโรงงาน
+      ├─ Offline Mode  → ทำงานได้แม้ไม่มี network
+      ├─ Barcode/QR    → Scan ทุกการเคลื่อนไหว Stock
+      └─ Redis Cache   → Real-time Dashboard, MRP Cache
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 MODULES (โมดูลหลัก)
+│
+├─ ระบบ สสส. (8 Modules)
+│  │
+│  ├─ 1. ข้อเสนอโครงการ    → สร้าง/แก้ไข/ยื่น, แนบไฟล์, งบประมาณ
+│  ├─ 2. คัดกรอง/กลั่นกรอง  → ตรวจคุณสมบัติ, ความเห็น, กำหนดงวด
+│  ├─ 3. อนุมัติโครงการ     → พิจารณา, บันทึกเงื่อนไข
+│  ├─ 4. สัญญา            → ตรวจเอกสาร, ลงนามอิเล็กทรอนิกส์
+│  ├─ 5. เบิกจ่าย/ส่งงาน    → ขอเบิกงวด, รายงาน, หลักฐาน
+│  ├─ 6. ปิดโครงการ        → รายงานสรุป, ตรวจครุภัณฑ์
+│  ├─ 7. Dashboard/KPI    → สถานะ, งบประมาณ, แจ้งเตือน
+│  └─ 8. รายงาน           → Export Excel/PDF, สถิติ
+│
+└─ ระบบ PCS (7 Modules)
+   │
+   ├─ 1. Sales      → Import Order, Delivery Note, Invoice
+   ├─ 2. MRP        → คำนวณความต้องการผลิต+วัตถุดิบอัตโนมัติ
+   ├─ 3. Production → Production Plan, Work Order, Tag
+   ├─ 4. Purchase   → PR, PO, Receive Material
+   ├─ 5. Inventory  → Stock IN/OUT, Warehouse, Barcode Scan
+   ├─ 6. Shipment   → Delivery, Shipment Tag, Tracking
+   └─ 7. Dashboard  → Real-time Status, KPI, Alert
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📈 KPIs (ตัวชี้วัด)
+│
+├─ ระบบ สสส.
+│  │
+│  ├─ Process KPIs
+│  │  ├─ Time to Approve     → ≤ 30 วัน
+│  │  ├─ Time to Pay         → ≤ 15 วัน
+│  │  ├─ Document Processing → ≤ 5 วันทำการ
+│  │  └─ First-time Approval → ≥ 70%
+│  │
+│  ├─ System KPIs
+│  │  ├─ System Uptime       → ≥ 99.5%
+│  │  ├─ Response Time       → ≤ 3 วินาที
+│  │  ├─ User Satisfaction   → ≥ 4.0/5.0
+│  │  └─ Bug/Defect Rate     → ≤ 5 ต่อ Sprint
+│  │
+│  └─ Business KPIs
+│     ├─ Paper Reduction     → ≥ 80%
+│     ├─ User Adoption       → ≥ 90%
+│     ├─ Process Automation  → ≥ 60%
+│     └─ Cost Savings        → ≥ 20%
+│
+└─ ระบบ PCS
+   │
+   ├─ On-Time Delivery    → > 95%
+   ├─ MRP Accuracy        → > 90%
+   ├─ Stock Accuracy      → > 99%
+   ├─ Production Yield    → > 98%
+   ├─ Lead Time Reduction → 20%
+   └─ User Adoption       → > 95%
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⚠️ RISKS & MITIGATION (ความเสี่ยง)
+│
+├─ ระบบ สสส.
+│  │
+│  │  ┌──────────────────────┬────────┬─────────────────────────────┐
+│  │  │ ความเสี่ยง            │ ระดับ   │ แนวทางแก้ไข                  │
+│  │  ├──────────────────────┼────────┼─────────────────────────────┤
+│  │  │ User Adoption ต่ำ    │ สูง    │ อบรม, Manual, Help Desk     │
+│  │  │ Integration ล้มเหลว   │ สูง    │ PoC, Testing กับ GFMIS/e-GP │
+│  │  │ Security/PDPA        │ ปานกลาง │ Audit, Encryption, MFA      │
+│  │  │ Timeline ล่าช้า       │ ปานกลาง │ Agile Sprint, Weekly review │
+│  │  │ Budget เกิน          │ ต่ำ    │ Phased approach, MVP first  │
+│  │  └──────────────────────┴────────┴─────────────────────────────┘
+│
+└─ ระบบ PCS
+   │
+   │  ┌──────────────────────┬─────────────────────────────────────┐
+   │  │ ความเสี่ยง            │ แนวทางแก้ไข                          │
+   │  ├──────────────────────┼─────────────────────────────────────┤
+   │  │ MRP คำนวณไม่แม่นยำ   │ ปรับ Parameter, Review รายสัปดาห์    │
+   │  │ Production หยุดชะงัก  │ Offline Mode, Auto-sync             │
+   │  │ Stock ไม่ตรง         │ Barcode Scan ทุกครั้ง, Stock Count   │
+   │  │ Integration ERP ล้มเหลว │ API Testing, Parallel Run 2 เดือน  │
+   │  │ User ไม่คุ้นเคย       │ Training แยก Role, Super User       │
+   │  └──────────────────────┴─────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❓ INTERVIEW QUESTIONS (16 ข้อ)
+│
+├─ 🔧 Technical Questions (Q1-Q5)
+│  │
+│  ├─ Q1: ทำไมเลือก PostgreSQL?
+│  │  └─ A: Open-source, ACID compliance, JSON support, Full-text search
+│  │
+│  ├─ Q2: ทำไมใช้ Agile?
+│  │  └─ A: Stakeholders หลายกลุ่ม, ต้องการ feedback เร็ว, ส่ง MVP ก่อนได้
+│  │
+│  ├─ Q3: MRP คืออะไร?
+│  │  └─ A: Material Requirements Planning - คำนวณความต้องการวัตถุดิบ
+│  │        จาก Sales Order + BOM + Stock + Lead Time
+│  │
+│  ├─ Q4: ระบบ สสส. เชื่อมต่อระบบภาครัฐอะไร?
+│  │  └─ A: GFMIS (การเงิน), e-GP (จัดซื้อจัดจ้าง), SSO (Authentication)
+│  │
+│  └─ Q5: ทำไม PCS ต้องมี Offline Mode?
+│     └─ A: Handy Scanner ใช้ในโรงงาน, Production ต้องไม่หยุด
+│
+├─ 🔄 Process Questions (Q6-Q9)
+│  │
+│  ├─ Q6: Workflow เบิกจ่าย สสส.?
+│  │  └─ A: ภาคีขอเบิก → นักวิชาการตรวจ → ผู้อนุมัติพิจารณา → GFMIS
+│  │
+│  ├─ Q7: Production Workflow PCS?
+│  │  └─ A: Order → MRP → PR/PO → Production (Handy) → Stock OUT → Ship
+│  │
+│  ├─ Q8: Bug ใน Production handle อย่างไร?
+│  │  └─ A: Target ≤5 bugs/Sprint, Weekly review, Priority: Security first
+│  │
+│  └─ Q9: User Adoption ต่ำ แก้อย่างไร?
+│     └─ A: Training, Super User, UI/UX ง่าย, Mobile responsive
+│
+├─ 🏛️ Architecture Questions (Q10-Q13)
+│  │
+│  ├─ Q10: ทำไมแยก 5 Layer?
+│  │  └─ A: Separation of Concerns, Scalability, Security, Testability
+│  │
+│  ├─ Q11: Redis ใช้ทำอะไรใน PCS?
+│  │  └─ A: Session cache, MRP cache, Real-time dashboard, Queue
+│  │
+│  ├─ Q12: ทำไมต้องลงนามอิเล็กทรอนิกส์?
+│  │  └─ A: ผลทางกฎหมาย, ลดกระดาษ 80%, Audit trail, Remote work
+│  │
+│  └─ Q13: Data Entity Relationships?
+│     └─ A: Project 1:N Milestone/Payment/Document, N:M User, 1:1 Contract
+│
+└─ 💬 Behavioral Questions (Q14-Q16)
+   │
+   ├─ Q14: ความท้าทายที่สุด?
+   │  ├─ สสส.: Integration กับ GFMIS (ระบบภาครัฐ, ต้อง PoC + Parallel Run)
+   │  └─ PCS: MRP accuracy (ต้อง tune parameter, review ทุกสัปดาห์)
+   │
+   ├─ Q15: ถ้าทำใหม่จะทำอะไรต่าง?
+   │  └─ A: Training เร็วขึ้น, Integration testing ตั้งแต่ต้น, Feature flags
+   │
+   └─ Q16: ทำงานกับ stakeholders หลายกลุ่ม?
+      └─ A: Sprint Review ร่วมกัน, Workshop แยก role, PO เป็นตัวกลาง
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📋 QUICK REFERENCE CARD
+│
+│  ┌─────────────────┬──────────────────────┬──────────────────────┐
+│  │ Aspect          │ ระบบ สสส.            │ ระบบ PCS             │
+│  ├─────────────────┼──────────────────────┼──────────────────────┤
+│  │ Domain          │ Government/NGO       │ Manufacturing        │
+│  │ Core Process    │ Grant Approval       │ Production Planning  │
+│  │ Users           │ 5 กลุ่ม              │ 6 กลุ่ม              │
+│  │ Modules         │ 8 modules            │ 7 modules            │
+│  │ Frontend        │ React/Vue            │ React + Handy        │
+│  │ Database        │ PostgreSQL + S3      │ PostgreSQL + Redis   │
+│  │ Integration     │ GFMIS, e-GP, SSO     │ ERP, Accounting      │
+│  │ Special Feature │ E-Signature, PDPA    │ MRP, Offline Mode    │
+│  │ Timeline        │ 9-12 เดือน           │ Agile/SDLC           │
+│  │ Target Uptime   │ ≥ 99.5%              │ Offline fallback     │
+│  │ User Adoption   │ ≥ 90%                │ > 95%                │
+│  └─────────────────┴──────────────────────┴──────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+💡 KEY TAKEAWAYS (สิ่งที่ควรจำ)
+│
+├─ ทั้ง 2 ระบบใช้ Agile methodology
+├─ ทั้ง 2 ระบบใช้ PostgreSQL เป็น main database
+├─ ทั้ง 2 ระบบมี RBAC (Role-Based Access Control)
+├─ ทั้ง 2 ระบบให้ความสำคัญกับ User Adoption (90%+)
+│
+├─ สสส. เน้น:
+│  ├─ Integration กับระบบภาครัฐ (GFMIS, e-GP)
+│  ├─ PDPA compliance
+│  └─ ลงนามอิเล็กทรอนิกส์
+│
+└─ PCS เน้น:
+   ├─ Real-time visibility (Dashboard)
+   ├─ Traceability (Material → Product → Ship)
+   ├─ Offline capability (Handy Scanner)
+   └─ MRP accuracy
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🐸 สรุปโดย Peepo Oracle | 31 January 2026
+   Source: Ralph Loop 10 iterations
+   Files: ศุภวิชญ์_พยัคสุโข_ข้อ.1.pdf, ศุภวิชญ์_พยัคสุโข_ข้อ.2.pdf
+
+═══════════════════════════════════════════════════════════════════════════════

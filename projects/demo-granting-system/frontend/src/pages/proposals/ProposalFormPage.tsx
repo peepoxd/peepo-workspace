@@ -27,6 +27,24 @@ export default function ProposalFormPage() {
     },
   });
 
+  const submitMutation = useMutation({
+    mutationFn: async (formData: typeof form) => {
+      // สร้างข้อเสนอก่อน แล้วยื่นเลย
+      const created = await proposalsApi.create({
+        ...formData,
+        budget: parseFloat(formData.budget),
+        duration: parseInt(formData.duration),
+        objectives: formData.objectives.filter(Boolean),
+      });
+      // ยื่นข้อเสนอ
+      return proposalsApi.submit(created.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['proposals'] });
+      navigate('/proposals');
+    },
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -154,9 +172,14 @@ export default function ProposalFormPage() {
               <Save size={20} />
               <span>บันทึกร่าง</span>
             </button>
-            <button type="button" className="btn btn-secondary flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => submitMutation.mutate(form)}
+              disabled={submitMutation.isPending}
+              className="btn btn-secondary flex items-center gap-2"
+            >
               <Send size={20} />
-              <span>ยื่นข้อเสนอ</span>
+              <span>{submitMutation.isPending ? 'กำลังยื่น...' : 'ยื่นข้อเสนอ'}</span>
             </button>
           </div>
         </div>

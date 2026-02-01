@@ -1,0 +1,334 @@
+================================================================================
+สคริปต์การนำเสนอ - ศุภวิชญ์ พยัคสุโข
+================================================================================
+
+################################################################################
+ไฟล์ที่ 1: ระบบจัดการเครือข่าย สสส. (ข้อ 1 - 12 หน้า)
+################################################################################
+
+--- หน้า 1: Title Slide ---
+"สวัสดีครับ วันนี้ผมจะมานำเสนอการออกแบบระบบจัดการเครือข่าย สสส.
+ซึ่งเป็นระบบสารสนเทศสนับสนุนโครงการภาคีเครือข่าย ครอบคลุมกระบวนการทั้งหมด
+ตั้งแต่การพัฒนาข้อเสนอ ไปจนถึงการอนุมัติ เบิกจ่าย และปิดโครงการครับ"
+
+--- หน้า 2: Overview (ภาพรวมระบบ) ---
+"เริ่มจากภาพรวมระบบครับ วัตถุประสงค์หลักคือบริหารจัดการโครงการครบวงจร
+โดยใช้ Agile Methodology ในการพัฒนา
+
+ระบบนี้มีผู้ใช้งานหลัก 5 กลุ่ม ได้แก่:
+1. ภาคีเครือข่าย - ทำหน้าที่ยื่นข้อเสนอ ขอเบิกเงิน และส่งรายงาน
+2. นักวิชาการ - คัดกรอง กลั่นกรอง และตรวจสอบ
+3. ผู้อนุมัติ - อนุมัติโครงการและการเบิกจ่าย
+4. ศูนย์สัญญา - จัดทำสัญญาและอนุมัติปิดโครงการ
+5. ฝ่ายกฎหมาย - ให้คำปรึกษาและพิจารณากรณียกเลิก"
+
+--- หน้า 3: Agile Methodology ---
+"สำหรับวิธีการพัฒนา ผมเลือกใช้ Agile Methodology
+แต่ละ Sprint ใช้เวลา 2-4 สัปดาห์ ประกอบด้วย 4 ขั้นตอน:
+Plan วางแผน → Develop พัฒนา → Test ทดสอบ → Review ตรวจสอบ
+
+หลักการสำคัญของ Agile ที่ใช้:
+- Iterative Development: พัฒนาทีละส่วน ส่งมอบเป็นระยะ
+- Customer Collaboration: ทำงานร่วมกับผู้ใช้ รับ Feedback
+- Responding to Change: ปรับเปลี่ยนได้ตาม Requirement
+- Working Software: เน้นส่งมอบระบบที่ใช้งานได้จริง
+
+Timeline โครงการประมาณ 9-12 เดือน แบ่งเป็น 5 ช่วง
+Sprint 1-2 ทำ MVP ข้อเสนอ+คัดกรอง
+Sprint 3-4 ทำโมดูลอนุมัติ+สัญญา
+Sprint 5-6 ระบบเบิกจ่าย+ส่งงาน
+Sprint 7-8 ปิดโครงการ+รายงาน
+Sprint 9+ Integration กับ GFMIS และ e-GP"
+
+--- หน้า 4: Workflow (กระบวนการทำงาน) ---
+"มาดูกระบวนการทำงานทั้งหมด 5 Phase ครับ
+
+Phase 1 - พัฒนาข้อเสนอ: ภาคียื่นข้อเสนอผ่านระบบ → คัดกรองขั้นต้น
+→ ถ้าไม่ผ่านจะส่งกลับแก้ไข
+
+Phase 2 - อนุมัติโครงการ: กลั่นกรองวิชาการ → ผู้บริหารอนุมัติ → ทำสัญญา
+
+Phase 3-4 - ดำเนินการและเบิกจ่าย: ขอเบิกเงินงวด พร้อมส่งรายงาน
+→ นักวิชาการตรวจสอบ → ผู้อนุมัติพิจารณาเบิก (วนซ้ำจนครบงวด)
+
+Phase 5 - ปิดโครงการ: ส่งรายงานสรุป → ตรวจครุภัณฑ์ → อนุมัติปิดโครงการ"
+
+--- หน้า 5: Key Modules (โมดูลหลัก) ---
+"ระบบประกอบด้วย 8 โมดูลหลัก:
+
+1. ข้อเสนอโครงการ - สร้าง แก้ไข ยื่น แนบไฟล์ และกำหนดงบประมาณ
+2. คัดกรอง/กลั่นกรอง - ตรวจคุณสมบัติ ให้ความเห็น กำหนดงวดเงิน
+3. อนุมัติโครงการ - พิจารณาและบันทึกเงื่อนไข
+4. สัญญา - ตรวจเอกสารและลงนามอิเล็กทรอนิกส์
+5. เบิกจ่าย/ส่งงาน - ขอเบิกงวด ส่งรายงาน แนบหลักฐาน อนุมัติเบิก
+6. ปิดโครงการ - รายงานสรุป ตรวจครุภัณฑ์ อนุมัติปิด
+7. Dashboard/KPI - แสดงสถานะ งบประมาณ และแจ้งเตือน
+8. รายงาน - Export Excel/PDF สถิติภาพรวม"
+
+--- หน้า 6: Data Entities (โครงสร้างข้อมูล) ---
+"โครงสร้างข้อมูลหลักประกอบด้วย 7 Entity:
+
+- Project (โครงการ) เป็นศูนย์กลาง มีความสัมพันธ์:
+  • 1:N กับ Milestone (งวดงาน)
+  • 1:N กับ Payment (การเบิก)
+  • 1:N กับ Document (เอกสาร)
+  • N:M กับ User (ผู้ใช้)
+
+- User (ผู้ใช้) มีความสัมพันธ์ N:1 กับ Role (บทบาท)
+- Contract (สัญญา) มีความสัมพันธ์ 1:1 กับ Project"
+
+--- หน้า 7: RBAC (สิทธิ์การเข้าถึง) ---
+"ระบบใช้ Role-Based Access Control กำหนดสิทธิ์ตามบทบาท:
+
+ภาคี - สร้างข้อเสนอได้ ดูคัดกรองและอนุมัติอย่างเดียว
+       แต่ดำเนินการสัญญา เบิกจ่าย และปิดโครงการได้
+
+นักวิชาการ - ทำข้อเสนอและคัดกรองได้ ตรวจสอบเบิกจ่ายและปิดโครงการได้
+
+ผู้อนุมัติ - อนุมัติโครงการ สัญญา และเบิกจ่ายได้
+
+ศูนย์สัญญา - ดูแลเฉพาะเรื่องสัญญาและการปิดโครงการ
+
+ฝ่ายกฎหมาย - ดูได้ทุกส่วน ดำเนินการได้เฉพาะปิดโครงการ"
+
+--- หน้า 8: Architecture (สถาปัตยกรรม) ---
+"สถาปัตยกรรมระบบแบ่งเป็น 5 Layer:
+
+Layer 1 - Frontend: Web Application พัฒนาด้วย React หรือ Vue
+Layer 2 - API Gateway: จัดการ Authentication และ Rate Limiting
+Layer 3 - Business Logic: แยก Service ตามหน้าที่ เช่น Proposal, Approval, Payment
+Layer 4 - Database: ใช้ PostgreSQL เก็บข้อมูล และ S3/MinIO เก็บไฟล์
+Layer 5 - Integration: เชื่อมต่อระบบภายนอก
+
+ระบบภายนอกที่ต้องเชื่อมต่อ:
+- GFMIS: ระบบบริหารการเงินการคลังภาครัฐ
+- e-GP: ระบบจัดซื้อจัดจ้างภาครัฐ
+- SSO: Single Sign-On Authentication"
+
+--- หน้า 9: KPI & Metrics ---
+"ตัวชี้วัดความสำเร็จแบ่งเป็น 3 กลุ่ม:
+
+Process KPIs:
+- Time to Approve ไม่เกิน 30 วัน
+- Time to Pay ไม่เกิน 15 วัน
+- Document Processing ไม่เกิน 5 วันทำการ
+- First-time Approval Rate มากกว่า 70%
+
+System KPIs:
+- System Uptime มากกว่า 99.5%
+- Response Time ไม่เกิน 3 วินาที
+- User Satisfaction มากกว่า 4.0/5.0
+- Bug Rate ไม่เกิน 5 ต่อ Sprint
+
+Business KPIs:
+- Paper Reduction มากกว่า 80%
+- User Adoption มากกว่า 90%
+- Process Automation มากกว่า 60%
+- Cost Savings มากกว่า 20%"
+
+--- หน้า 10: Risks & Mitigation ---
+"ความเสี่ยงและแนวทางแก้ไข:
+
+1. User Adoption ต่ำ (ความเสี่ยงสูง)
+   → จัดอบรมผู้ใช้ ทำ User Manual และจัดตั้ง Help Desk
+
+2. Integration ล้มเหลว (ความเสี่ยงสูง)
+   → ทำ PoC ก่อน แล้ว Testing กับ GFMIS/e-GP
+
+3. Security/PDPA (ความเสี่ยงปานกลาง)
+   → Security Audit, Encryption, MFA
+
+4. Timeline ล่าช้า (ความเสี่ยงปานกลาง)
+   → ใช้ Agile Sprint และ Weekly Review
+
+5. Budget เกิน (ความเสี่ยงต่ำ)
+   → ใช้ Phased Approach ทำ MVP ก่อน"
+
+--- หน้า 11: Success Factors ---
+"ปัจจัยความสำเร็จ 4 ด้าน:
+
+1. User-Friendly
+   - UI/UX ใช้งานง่าย
+   - ลดภาระเอกสาร
+   - Mobile responsive
+
+2. Transparency
+   - Real-time tracking
+   - Notification อัตโนมัติ
+   - Audit trail ตรวจสอบได้
+
+3. Automation
+   - Auto-notification
+   - Auto-calculation
+   - Workflow engine
+
+4. Security
+   - PDPA compliance
+   - MFA authentication
+   - Data encryption"
+
+--- หน้า 12: Thank You ---
+"ขอบคุณที่รับฟังการนำเสนอครับ
+มีคำถามหรือข้อสงสัยเพิ่มเติม ยินดีตอบครับ"
+
+
+################################################################################
+ไฟล์ที่ 2: ระบบ PCS - Production Control System (ข้อ 2 - 9 หน้า)
+################################################################################
+
+--- หน้า 1: Title Slide ---
+"สวัสดีครับ ต่อไปจะนำเสนอระบบที่ผมเคยมีส่วนร่วมพัฒนา
+คือระบบ PCS หรือ Production Control System
+เป็นระบบควบคุมการผลิตแบบครบวงจร ครอบคลุมตั้งแต่
+รับ Order → วางแผน MRP → จัดซื้อ → ผลิต → จัดส่ง"
+
+--- หน้า 2: Overview (ภาพรวมระบบ) ---
+"วัตถุประสงค์คือบริหารจัดการการผลิตครบวงจร
+ตั้งแต่รับ Order จากลูกค้า → วางแผน MRP → ผลิต → จัดส่ง
+
+ผู้ใช้งานมี 6 กลุ่ม:
+1. ฝ่ายขาย (Sale) - รับ Order และออก Invoice
+2. ฝ่ายวางแผน (Planning) - MRP และ Production Plan
+3. ฝ่ายผลิต (Production) - ทำ Work Order และบันทึกผลผลิต
+4. ฝ่ายจัดซื้อ (Purchase) - ทำ PR, PO และรับวัตถุดิบ
+5. คลังสินค้า (Warehouse) - Stock IN/OUT
+6. ฝ่ายจัดส่ง (Shipment) - Delivery และ Tracking
+
+วิธีการพัฒนาใช้ Agile และ SDLC"
+
+--- หน้า 3: Workflow (กระบวนการทำงาน) ---
+"กระบวนการทำงานแบ่งเป็น 5 Phase:
+
+Phase 1 (Sales): รับ Order จากลูกค้า Import PO เข้าระบบ ออก Delivery Note
+
+Phase 2 (MRP): คำนวณความต้องการผลิตและวัตถุดิบ สร้าง Work Order
+
+Phase 3 (Purchase): สร้าง PR/PO สั่งซื้อวัตถุดิบ รับของเข้า Stock IN
+
+Phase 4 (Production): ผลิตตาม Work Order บันทึกผ่าน Handy Terminal
+
+Phase 5 (Shipment): เบิก Stock OUT ติด Shipment Tag ออก Invoice"
+
+--- หน้า 4: Key Modules (โมดูลหลัก) ---
+"โมดูลหลัก 7 โมดูล:
+
+1. Sales - Import Order, Delivery Note, Invoice
+2. MRP - คำนวณความต้องการผลิตและวัตถุดิบอัตโนมัติ
+3. Production - Production Plan, Work Order, Production Tag
+4. Purchase - PR, PO, Receive Material จาก Supplier
+5. Inventory - Stock IN/OUT, Warehouse, Barcode/QR Scan
+6. Shipment - Delivery, Shipment Tag, Tracking
+7. Dashboard - Real-time Status, KPI, Alert Notification"
+
+--- หน้า 5: RBAC (สิทธิ์การเข้าถึง) ---
+"การกำหนดสิทธิ์ตามบทบาท ใช้สัญลักษณ์:
+✓C = Create, ✓U = Update, ✓A = Approve/All, ○ = Read-only, - = No access
+
+ฝ่ายขาย - สร้าง Sale Order ได้ ดู MRP และ Production ได้
+วางแผน - สร้าง MRP และ Production Plan ได้
+ฝ่ายผลิต - สร้าง Production Record และ Update Stock ได้
+จัดซื้อ - สร้าง PR/PO และ Update Stock ได้
+คลังสินค้า - สร้าง Stock Record และ Update Shipment ได้
+จัดส่ง - สร้าง Shipment Record และ Update Stock ได้
+ผู้บริหาร - มีสิทธิ์ทุกอย่าง Approve/All ทุกโมดูล"
+
+--- หน้า 6: Architecture (สถาปัตยกรรม) ---
+"สถาปัตยกรรม 5 Layer:
+
+Layer 1 - Frontend: React + Handy Scanner สำหรับหน้างาน
+Layer 2 - API Gateway: จัดการ Auth และ Logging
+Layer 3 - Business Services: แยกตาม Domain - Sale, MRP, Production, Purchase, Stock, Shipment
+Layer 4 - Database: PostgreSQL + Redis (Cache) + S3 (File Storage)
+Layer 5 - Integration: เชื่อมต่อ ERP, Accounting, Supplier Portal, Logistics"
+
+--- หน้า 7: Risks & Mitigation ---
+"ความเสี่ยงและการจัดการ:
+
+1. MRP คำนวณไม่แม่นยำ
+   → ปรับ Parameter จาก Historical Data และ Review รายสัปดาห์
+
+2. Production หยุดชะงัก (Internet ขาด)
+   → ทำ Offline Mode สำหรับ Handy และ Auto-sync เมื่อกลับมา Online
+
+3. Stock ไม่ตรงกับระบบ
+   → บังคับใช้ Barcode/QR Scan ทุกการเคลื่อนไหว และทำ Stock Count รายเดือน
+
+4. Integration กับ ERP ล้มเหลว
+   → ทำ API Testing และ Parallel Run 2 เดือนก่อน Go-live
+
+5. User ไม่คุ้นเคยระบบ
+   → Training แยกตาม Role และมี Super User ประจำแผนก"
+
+--- หน้า 8: Success Factors & KPIs ---
+"ปัจจัยความสำเร็จ:
+- Real-time Visibility: ดูสถานะการผลิต, Stock, Order ได้ทันที
+- Accurate Planning: MRP แม่นยำ ลดการขาด/เกิน Stock
+- Traceability: ติดตามย้อนกลับได้ทุก Lot (Material → Product → Ship)
+- Efficiency: ลด Lead Time 20%, ลด Manual Entry 80%
+
+KPIs:
+- On-Time Delivery > 95%
+- MRP Accuracy > 90%
+- Stock Accuracy > 99%
+- Production Yield > 98%
+- Lead Time Reduction 20%
+- User Adoption > 95%"
+
+--- หน้า 9: Thank You ---
+"ขอบคุณครับ มีคำถามยินดีตอบครับ"
+
+
+################################################################################
+ไฟล์ที่ 3: ภาพรวมระบบ (3 หน้า)
+################################################################################
+
+--- หน้า 1: โจทย์แบบทดสอบ ---
+"นี่คือโจทย์แบบทดสอบตำแหน่งหัวหน้าโครงการฝ่ายเทคโนโลยีสารสนเทศ สสส.
+
+ข้อ 1 (50 คะแนน): ออกแบบระบบสารสนเทศสนับสนุนโครงการ สสส.
+ครอบคลุมตั้งแต่พัฒนาข้อเสนอ → อนุมัติ → เบิกจ่าย → ปิดโครงการ
+เขียนให้อยู่ใน 1 หน้า A4
+
+ข้อ 2 (50 คะแนน): เขียนกระบวนการทำงานของระบบสารสนเทศ
+ที่เคยมีโอกาสร่วมพัฒนามา ใน 1 หน้า A4"
+
+--- หน้า 2: คำตอบข้อ 1 - ระบบบริหารจัดการโครงการและทุนสนับสนุน ---
+"นี่คือคำตอบข้อ 1 แบบสรุป 1 หน้า
+
+1. ภาพรวมระบบ - บริหารโครงการครบวงจร 5 กลุ่มผู้ใช้
+
+2. Workflow 5 Phase:
+   Phase 1-2: ยื่นข้อเสนอ → คัดกรอง → กลั่นกรอง → อนุมัติ → ทำสัญญา
+   Phase 3-4: เบิกงวด → ส่งรายงาน → เบิกงวดถัดไป (วนซ้ำ)
+   Phase 5: ส่งรายงานสรุป → ตรวจสอบ → อนุมัติปิด
+
+3. Key Modules - ข้อเสนอ, คัดกรอง/กลั่นกรอง, เบิกจ่าย/ส่งงาน, Dashboard/รายงาน
+
+4. RBAC - กำหนดสิทธิ์ตามบทบาท 5 กลุ่ม
+
+5. KPIs - User-Friendly, Transparency, Automation, Security"
+
+--- หน้า 3: คำตอบข้อ 2 - ระบบ PCS Production Control System ---
+"นี่คือคำตอบข้อ 2 แบบสรุป 1 หน้า
+
+1. ภาพรวมระบบ - บริหารการผลิตครบวงจร 6 กลุ่มผู้ใช้ ใช้ Agile + SDLC
+
+2. Workflow: Customer Order → Sale → MRP → Purchase → Stock → Shipment
+
+3. Key Modules - Sales, MRP, Production, Purchase, Inventory, Shipment
+
+4. RBAC - กำหนดสิทธิ์ตามบทบาท 7 กลุ่ม
+
+5. Risks & Mitigation:
+   - MRP ไม่แม่นยำ → ปรับ Parameter + Review รายสัปดาห์
+   - Production หยุด → Offline Mode + Auto-sync
+   - Stock ไม่ตรง → Barcode Scan + Stock Count รายเดือน
+
+6. KPIs:
+   - MRP Accuracy > 90%
+   - Stock Accuracy > 99%
+   - Lead Time Reduction 20%"
+
+================================================================================
+จบสคริปต์
+================================================================================
