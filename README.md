@@ -1,4 +1,4 @@
-# Peepo Oracle
+# Peepo DEV
 
 Development workspace and learning repository.
 
