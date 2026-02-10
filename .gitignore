@@ -26,3 +26,12 @@ npm-debug.log*
 # Temp files
 *.tmp
 *.temp
+
+# Backup (old files, binaries, node_modules)
+backup/
+
+# Oracle local study materials
+ψ/learn/
+
+# Java/Maven build outputs
+target/
