@@ -1,15 +1,15 @@
 [submodule "projects/basic-api-spring-boot"]
-	path = projects/basic-api-spring-boot
+	path = projects/spring-boot-basic-api
 	url = https://github.com/peepoxd/basic-api-spring-boot.git
 [submodule "projects/personal-demo"]
-	path = projects/personal-demo
+	path = projects/personal-portfolio
 	url = https://github.com/peepoxd/personal-demo.git
 [submodule "projects/e-ecomserse-demo"]
-	path = projects/e-ecomserse-demo
+	path = projects/e-commerce-vue
 	url = https://github.com/peepoxd/e-ecomserse-demo.git
 [submodule "projects/claude-code"]
-	path = projects/claude-code
+	path = projects/e-granting-docs
 	url = https://github.com/peepoxd/claude-code.git
 [submodule "projects/order-management-demo"]
-	path = projects/order-management-demo
+	path = projects/order-management-api
 	url = https://github.com/peepoxd/order-management-demo.git

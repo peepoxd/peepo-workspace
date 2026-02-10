@@ -1,0 +1,619 @@
+  แบ่งตม: Skills × Languages × Domains × Complexity                                                                                                                                                                                                        
+   
+  ---                                                                                                                                                                                                                                                     
+  📊 Overview Map                      
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                                                                     │
+  │                        YOUR PORTFOLIO                               │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🏢 TIER 1: Market-Ready (ขยได้)                                   │
+  │  ├── P1: REST API (Java/Spring)                                    │
+  │  ├── P2: Full-Stack App (TypeScript/NestJS + React)                │
+  │  └── P3: CLI Tool (Python)                                         │
+  │                                                                     │
+  │  ⚡ TIER 2: Specialist (โดดเด่น)                                     │
+  │  ├── P4: Real-time System (Elixir/Phoenix)                         │
+  │  ├── P5: High-Performance Service (Go)                             │
+  │  └── P6: Systems Programming (Rust)                                │
+  │                                                                     │
+  │  🧪 TIER 3: Learning & Fun (เรียนรู้)                               │
+  │  ├── P7: Data Pipeline (Python)                                    │
+  │  ├── P8: Compiler/Interpreter (Any)                                │
+  │  └── P9: OSS Contributions                                         │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  🏢 TIER 1: Market-Ready Projects
+
+  P1: Enterprise REST API
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P1: Task Management API                                        │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Enterprise-grade development                     │
+  │  🗣️ Language: Java 17+ / Spring Boot 3                             │
+  │  ⏱️ Time: 4-6 weeks                                                 │
+  │  💼 Jobs: Enterprise, Banking, Corporate                           │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── OOP + SOLID Principles                                        │
+  │  ├── Design Patterns (Factory, Strategy, Repository)               │
+  │  ├── Clean Architecture / Hexagonal                                │
+  │  ├── JPA/Hibernate                                                 │
+  │  ├── Security (Spring Security + JWT)                              │
+  │  └── Testing (JUnit, Mockito, TestContainers)                      │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Java 17, Spring Boot 3, Spring Security                       │
+  │  ├── PostgreSQL, Redis, Flyway migrations                          │
+  │  ├── OpenAPI/Swagger                                               │
+  │  ├── Docker, GitHub Actions                                        │
+  │  └── Deploy: Railway / AWS ECS                                     │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  ✅ Features:                                                       │
+  │  ├── User management (CRUD + roles)                                │
+  │  ├── Project & Task management                                     │
+  │  ├── Team collaboration                                            │
+  │  ├── Activity logging                                              │
+  │  ├── Search & filtering                                            │
+  │  ├── Email notifications                                           │
+  │  └── Export (PDF/Excel)                                            │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📁 Structure:                                                      │
+  │  src/main/java/com/example/                                        │
+  │  ├── domain/           # Entities, Value Objects                   │
+  │  ├── application/      # Use Cases, DTOs                           │
+  │  ├── infrastructure/   # Repositories, External Services           │
+  │  ├── presentation/     # Controllers, Middleware                   │
+  │  └── config/           # Spring Configuration                      │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P2: Full-Stack Application
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P2: E-Commerce Platform                                        │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Full-Stack + Modern Web                          │
+  │  🗣️ Language: TypeScript (Frontend + Backend)                      │
+  │  ⏱️ Time: 6-8 weeks                                                 │
+  │  💼 Jobs: Startup, Tech Companies, Product Teams                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── TypeScript (Advanced types)                                   │
+  │  ├── Backend: NestJS + Clean Architecture                          │
+  │  ├── Frontend: React/Next.js                                       │
+  │  ├── Database Design                                               │
+  │  ├── State Management                                              │
+  │  └── E2E Testing                                                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │                                                                     │
+  │  Backend:                                                          │
+  │  ├── NestJS, Prisma ORM                                            │
+  │  ├── PostgreSQL, Redis                                             │
+  │  ├── Bull (job queue)                                              │
+  │  └── Stripe (payments)                                             │
+  │                                                                     │
+  │  Frontend:                                                         │
+  │  ├── Next.js 14 (App Router)                                       │
+  │  ├── TailwindCSS, Shadcn/ui                                        │
+  │  ├── React Query                                                   │
+  │  └── Zustand (state)                                               │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  ✅ Features:                                                       │
+  │  ├── Product catalog + search                                      │
+  │  ├── Shopping cart                                                 │
+  │  ├── Checkout + Payment                                            │
+  │  ├── Order management                                              │
+  │  ├── Admin dashboard                                               │
+  │  ├── Inventory tracking                                            │
+  │  └── Email notifications                                           │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📁 Monorepo Structure:                                             │
+  │  apps/                                                             │
+  │  ├── api/              # NestJS Backend                            │
+  │  ├── web/              # Next.js Frontend                          │
+  │  └── admin/            # Admin Dashboard                           │
+  │  packages/                                                         │
+  │  ├── shared/           # Shared types, utils                       │
+  │  ├── ui/               # Shared components                         │
+  │  └── config/           # Shared configs                            │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P3: CLI Tool
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P3: Dev Productivity CLI                                       │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Scripting + Automation                           │
+  │  🗣️ Language: Python                                               │
+  │  ⏱️ Time: 2-3 weeks                                                 │
+  │  💼 Jobs: DevOps, Platform, Backend                                │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── Python packaging (Poetry/pip)                                 │
+  │  ├── CLI design (Click/Typer)                                      │
+  │  ├── API integrations                                              │
+  │  ├── Config management                                             │
+  │  └── Cross-platform compatibility                                  │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Python 3.11+                                                  │
+  │  ├── Typer (CLI framework)                                         │
+  │  ├── Rich (beautiful output)                                       │
+  │  ├── httpx (async HTTP)                                            │
+  │  └── PyPI publishing                                               │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  💡 Ideas (เลือก 1):                                                │
+  │                                                                     │
+  │  Option A: "projector" — Project scaffolding                       │
+  │  ├── projector init <template>                                     │
+  │  ├── projector add <feature>                                       │
+  │  └── Templates: api, fullstack, cli                                │
+  │                                                                     │
+  │  Option B: "gitflow" — Git workflow helper                         │
+  │  ├── gitflow start feature <name>                                  │
+  │  ├── gitflow pr create                                             │
+  │  └── gitflow release                                               │
+  │                                                                     │
+  │  Option C: "devenv" — Environment manager                          │
+  │  ├── devenv setup                                                  │
+  │  ├── devenv check                                                  │
+  │  └── devenv doctor                                                 │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  ⚡ TIER 2: Specialist Projects
+
+  P4: Real-time System (Elixir)
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P4: Collaborative Whiteboard                                   │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Real-time + Distributed + FP                     │
+  │  🗣️ Language: Elixir + Phoenix                                     │
+  │  ⏱️ Time: 6-8 weeks                                                 │
+  │  💼 Jobs: Real-time apps, Remote (global)                          │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── Functional Programming                                        │
+  │  ├── OTP (GenServer, Supervisor)                                   │
+  │  ├── Phoenix Channels (WebSocket)                                  │
+  │  ├── Phoenix LiveView                                              │
+  │  ├── Distributed Elixir                                            │
+  │  ├── CRDT (Conflict-free data)                                     │
+  │  └── Presence tracking                                             │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Elixir 1.15+, Phoenix 1.7                                     │
+  │  ├── Phoenix LiveView                                              │
+  │  ├── Phoenix Presence                                              │
+  │  ├── PostgreSQL + Ecto                                             │
+  │  ├── Fly.io (multi-region)                                         │
+  │  └── libcluster (node discovery)                                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  ✅ Features:                                                       │
+  │  ├── Real-time drawing canvas                                      │
+  │  ├── Multiple cursors visible                                      │
+  │  ├── Shape tools (rectangle, circle, text)                         │
+  │  ├── Undo/Redo (CRDT-based)                                        │
+  │  ├── Room management                                               │
+  │  ├── User presence (who's viewing)                                 │
+  │  ├── Export to PNG/SVG                                             │
+  │  └── Multi-node: users on different servers sync                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🏗️ Architecture:                                                   │
+  │                                                                     │
+  │  ┌─────────┐    ┌─────────┐    ┌─────────┐                         │
+  │  │ Node 1  │◄──►│ Node 2  │◄──►│ Node 3  │  Erlang Distribution   │
+  │  │ Tokyo   │    │ London  │    │ NYC     │                         │
+  │  └────┬────┘    └────┬────┘    └────┬────┘                         │
+  │       │              │              │                               │
+  │       ▼              ▼              ▼                               │
+  │    Users          Users          Users                              │
+  │    in Asia        in EU          in US                              │
+  │                                                                     │
+  │  → User A (Tokyo) draws                                            │
+  │  → Node 1 broadcasts to Node 2, 3                                  │
+  │  → User B (London) sees in < 100ms                                 │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📁 Structure:                                                      │
+  │  lib/                                                              │
+  │  ├── whiteboard/                                                   │
+  │  │   ├── boards/                                                   │
+  │  │   │   ├── board.ex           # Board GenServer                  │
+  │  │   │   ├── board_supervisor.ex                                   │
+  │  │   │   └── board_registry.ex                                     │
+  │  │   ├── canvas/                                                   │
+  │  │   │   ├── shape.ex           # Shape structs                    │
+  │  │   │   ├── operations.ex      # CRDT operations                  │
+  │  │   │   └── history.ex         # Undo/Redo                        │
+  │  │   └── presence/                                                 │
+  │  │       └── tracker.ex                                            │
+  │  └── whiteboard_web/                                               │
+  │      ├── channels/                                                 │
+  │      │   └── board_channel.ex                                      │
+  │      └── live/                                                     │
+  │          └── board_live.ex                                         │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P5: High-Performance Service (Go)
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P5: URL Shortener (High-Scale)                                 │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Performance + Concurrency + System Design        │
+  │  🗣️ Language: Go                                                   │
+  │  ⏱️ Time: 4-5 weeks                                                 │
+  │  💼 Jobs: Backend, Infrastructure, Platform                        │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── Go idioms + best practices                                    │
+  │  ├── Goroutines + Channels                                         │
+  │  ├── HTTP performance optimization                                 │
+  │  ├── Database optimization (indexes, connection pooling)           │
+  │  ├── Caching strategies                                            │
+  │  ├── Rate limiting                                                 │
+  │  └── Load testing + benchmarking                                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Go 1.21+                                                      │
+  │  ├── Chi (HTTP router)                                             │
+  │  ├── PostgreSQL + pgx                                              │
+  │  ├── Redis (cache + rate limit)                                    │
+  │  ├── Prometheus + Grafana                                          │
+  │  └── Docker + k8s ready                                            │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  ✅ Features:                                                       │
+  │  ├── URL shortening (base62 encoding)                              │
+  │  ├── Custom aliases                                                │
+  │  ├── Click analytics                                               │
+  │  ├── Expiration dates                                              │
+  │  ├── Rate limiting (per IP, per user)                              │
+  │  ├── API keys for power users                                      │
+  │  └── Admin dashboard (stats)                                       │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📈 Performance Goals:                                              │
+  │  ├── 50,000 requests/second (read)                                 │
+  │  ├── 5,000 requests/second (write)                                 │
+  │  ├── p99 latency < 10ms                                            │
+  │  └── Document benchmarks in README                                 │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📁 Structure:                                                      │
+  │  cmd/                                                              │
+  │  ├── api/                                                          │
+  │  │   └── main.go              # API entry                          │
+  │  └── worker/                                                       │
+  │      └── main.go              # Background jobs                    │
+  │  internal/                                                         │
+  │  ├── domain/                                                       │
+  │  │   ├── url.go               # URL entity                         │
+  │  │   └── analytics.go                                              │
+  │  ├── service/                                                      │
+  │  │   ├── shortener.go         # Business logic                     │
+  │  │   └── analytics.go                                              │
+  │  ├── repository/                                                   │
+  │  │   ├── postgres/                                                 │
+  │  │   └── redis/                                                    │
+  │  ├── handler/                                                      │
+  │  │   └── http/                                                     │
+  │  └── middleware/                                                   │
+  │      ├── ratelimit.go                                              │
+  │      └── logging.go                                                │
+  │  pkg/                                                              │
+  │  └── base62/                  # Reusable package                   │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P6: Systems Programming (Rust)
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P6: Log Aggregator / Metrics Collector                         │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Systems thinking + Memory safety                 │
+  │  🗣️ Language: Rust                                                 │
+  │  ⏱️ Time: 6-8 weeks                                                 │
+  │  💼 Jobs: Infrastructure, Observability, Systems                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── Ownership + Borrowing                                         │
+  │  ├── Async Rust (Tokio)                                            │
+  │  ├── Zero-copy parsing                                             │
+  │  ├── Memory efficiency                                             │
+  │  ├── Error handling (Result, ?)                                    │
+  │  └── CLI design (clap)                                             │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Rust 1.70+                                                    │
+  │  ├── Tokio (async runtime)                                         │
+  │  ├── Axum (HTTP server)                                            │
+  │  ├── SQLx (async DB)                                               │
+  │  ├── Clap (CLI)                                                    │
+  │  └── Serde (serialization)                                         │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  💡 Options (เลือก 1):                                              │
+  │                                                                     │
+  │  Option A: "logpipe" — Log aggregator                              │
+  │  ├── Collect logs from multiple sources                            │
+  │  ├── Parse + structure logs                                        │
+  │  ├── Forward to storage (file, S3, etc.)                           │
+  │  └── Query interface                                               │
+  │                                                                     │
+  │  Option B: "metricsd" — Metrics collector                          │
+  │  ├── StatsD-compatible protocol                                    │
+  │  ├── Aggregation (sum, avg, percentiles)                           │
+  │  ├── Prometheus exposition                                         │
+  │  └── Efficient storage                                             │
+  │                                                                     │
+  │  Option C: "kvstore" — Key-Value store                             │
+  │  ├── In-memory with persistence                                    │
+  │  ├── Redis protocol compatible                                     │
+  │  ├── TTL support                                                   │
+  │  └── Replication (advanced)                                        │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📁 Structure:                                                      │
+  │  src/                                                              │
+  │  ├── main.rs                                                       │
+  │  ├── lib.rs                                                        │
+  │  ├── config.rs                                                     │
+  │  ├── server/                                                       │
+  │  │   ├── mod.rs                                                    │
+  │  │   ├── tcp.rs                                                    │
+  │  │   └── http.rs                                                   │
+  │  ├── storage/                                                      │
+  │  │   ├── mod.rs                                                    │
+  │  │   ├── memory.rs                                                 │
+  │  │   └── disk.rs                                                   │
+  │  ├── protocol/                                                     │
+  │  │   ├── mod.rs                                                    │
+  │  │   └── parser.rs                                                 │
+  │  └── metrics/                                                      │
+  │      └── mod.rs                                                    │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  🧪 TIER 3: Learning Projects
+
+  P7: Data Pipeline (Python)
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P7: ETL Pipeline / Data Processing                             │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Data Engineering skills                          │
+  │  🗣️ Language: Python                                               │
+  │  ⏱️ Time: 3-4 weeks                                                 │
+  │  💼 Jobs: Data Engineer, Backend with data focus                   │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  🔧 Tech Stack:                                                     │
+  │  ├── Python 3.11+                                                  │
+  │  ├── Pandas / Polars                                               │
+  │  ├── Apache Airflow (orchestration)                                │
+  │  ├── PostgreSQL / DuckDB                                           │
+  │  └── Docker                                                        │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  💡 Ideas:                                                          │
+  │  ├── GitHub activity analyzer                                      │
+  │  ├── Stock price tracker + alerts                                  │
+  │  ├── News aggregator + sentiment                                   │
+  │  └── Log analyzer + dashboard                                      │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P8: Compiler/Interpreter
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P8: Mini Language Interpreter                                  │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง CS fundamentals + Language design                │
+  │  🗣️ Language: Go, Rust, or TypeScript                              │
+  │  ⏱️ Time: 4-6 weeks                                                 │
+  │  💼 Jobs: Compiler teams, Dev tools, Senior roles                  │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  📚 Skills Demonstrated:                                           │
+  │  ├── Lexing + Parsing                                              │
+  │  ├── AST design                                                    │
+  │  ├── Type checking (optional)                                      │
+  │  ├── Tree-walking interpreter                                      │
+  │  └── REPL implementation                                           │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  💡 Ideas:                                                          │
+  │  ├── Calculator language                                           │
+  │  ├── Lisp interpreter                                              │
+  │  ├── Markdown to HTML compiler                                     │
+  │  └── Query language (like jq)                                      │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  P9: Open Source Contributions
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │  📦 P9: OSS Contributions                                          │
+  │  ─────────────────────────────────────────────────────────────────  │
+  │                                                                     │
+  │  🎯 Purpose: แสดง Collaboration + Community involvement            │
+  │  ⏱️ Time: Ongoing                                                   │
+  │  💼 Jobs: ทุกงน (เป็น bonus)                                       │
+  │                                                                     │
+  ├─────────────────────────────────────────────────────────────────────┤
+  │                                                                     │
+  │  💡 Ideas by Language:                                              │
+  │                                                                     │
+  │  Java:                                                             │
+  │  ├── Spring Boot                                                   │
+  │  ├── Apache projects                                               │
+  │  └── Quarkus                                                       │
+  │                                                                     │
+  │  TypeScript:                                                       │
+  │  ├── NestJS                                                        │
+  │  ├── Prisma                                                        │
+  │  └── tRPC                                                          │
+  │                                                                     │
+  │  Go:                                                               │
+  │  ├── Kubernetes ecosystem                                          │
+  │  ├── Hugo                                                          │
+  │  └── CockroachDB                                                   │
+  │                                                                     │
+  │  Elixir:                                                           │
+  │  ├── Phoenix Framework                                             │
+  │  ├── Ecto                                                          │
+  │  └── Livebook                                                      │
+  │                                                                     │
+  │  Rust:                                                             │
+  │  ├── Tokio                                                         │
+  │  ├── Axum                                                          │
+  │  └── rust-analyzer                                                 │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  📅 Priority & Timeline
+
+  ┌─────────────────────────────────────────────────────────────────────┐
+  │                                                                     │
+  │  🎯 RECOMMENDED ORDER:                                              │
+  │                                                                     │
+  │  Phase 1 (Month 1-2): "ขยได้ก่อน"                                  │
+  │  ├── P1: Java REST API                                             │
+  │  └── P3: Python CLI (quick win)                                    │
+  │                                                                     │
+  │  Phase 2 (Month 3-4): "โชว์ Depth"                                  │
+  │  ├── P4: Elixir Real-time                                          │
+  │  └── P9: Start OSS contributions                                   │
+  │                                                                     │
+  │  Phase 3 (Month 5-6): "เติมเต็ม"                                    │
+  │  ├── P5: Go High-Performance                                       │
+  │  └── P2: Full-stack (if time permits)                              │
+  │                                                                     │
+  │  Phase 4 (Month 7+): "Advanced"                                    │
+  │  ├── P6: Rust Systems                                              │
+  │  ├── P7: Data Pipeline                                             │
+  │  └── P8: Compiler (optional, impressive)                           │
+  │                                                                     │
+  └─────────────────────────────────────────────────────────────────────┘
+
+  ---
+  🗂️ Summary Table
+
+  ┌────────────────────────────────────────────────────────────────────────────────┐
+  │  #   │ Project              │ Lang       │ Skills              │ Jobs         │
+  ├────────────────────────────────────────────────────────────────────────────────┤
+  │  P1  │ REST API             │ Java       │ OOP, Patterns       │ Enterprise   │
+  │  P2  │ E-Commerce           │ TypeScript │ Full-Stack          │ Startup      │
+  │  P3  │ CLI Tool             │ Python     │ Scripting           │ DevOps       │
+  ├────────────────────────────────────────────────────────────────────────────────┤
+  │  P4  │ Whiteboard           │ Elixir     │ Real-time, FP       │ Remote       │
+  │  P5  │ URL Shortener        │ Go         │ Performance         │ Backend      │
+  │  P6  │ Log Aggregator       │ Rust       │ Systems             │ Infra        │
+  ├────────────────────────────────────────────────────────────────────────────────┤
+  │  P7  │ Data Pipeline        │ Python     │ Data Eng            │ Data         │
+  │  P8  │ Interpreter          │ Any        │ CS Fundamentals     │ Senior       │
+  │  P9  │ OSS                  │ Any        │ Collaboration       │ All          │
+  └────────────────────────────────────────────────────────────────────────────────┘
+
+  ---
+  💡 สรุป
+
+  ┌────────────────────────────────────────────────────────────────────┐
+  │                                                                    │
+  │  Minimum Viable Portfolio:                                        │
+  │  ├── P1 (Java) — ได้งน                                           │
+  │  ├── P4 (Elixir) — โดดเด่น                                        │
+  │  └── P9 (OSS) — แสดง community involvement                        │
+  │                                                                    │
+  │  ────────────────────────────────────────────────────────────────  │
+  │                                                                    │
+  │  Strong Portfolio:                                                 │
+  │  ├── P1 + P5 (Java + Go) — Backend versatility                   │
+  │  ├── P4 (Elixir) — Specialist depth                              │
+  │  ├── P3 (Python) — Quick utility                                 │
+  │  └── P9 (OSS) — Collaboration                                    │
+  │                                                                    │
+  │  ────────────────────────────────────────────────────────────────  │
+  │                                                                    │
+  │  Impressive Portfolio:                                            │
+  │  └── All of the above + P6 (Rust) + P8 (Compiler)                │
+  │                                                                    │
+  └────────────────────────────────────────────────────────────────────┘
+
+  ---

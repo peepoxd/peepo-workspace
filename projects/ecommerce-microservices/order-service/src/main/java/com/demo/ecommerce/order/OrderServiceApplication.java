@@ -1,0 +1,15 @@
+package com.demo.ecommerce.order;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication(scanBasePackages = {
+        "com.demo.ecommerce.order",
+        "com.demo.ecommerce.common"
+})
+public class OrderServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(OrderServiceApplication.class, args);
+    }
+}

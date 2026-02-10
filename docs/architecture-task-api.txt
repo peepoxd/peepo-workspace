@@ -1,0 +1,402 @@
+═══════════════════════════════════════════════════════════════════════
+  Task Management API — Architecture Guide
+  Phase 1: Foundation (Auth + User + Infrastructure)
+  Created: 2026-02-05
+═══════════════════════════════════════════════════════════════════════
+
+
+  สารบัญ
+  ──────
+  1. ภาพรวม Architecture
+  2. Request Flow (เส้นทางข้อมูล)
+  3. Project Tree + คำอธิบาย
+  4. Layer-by-Layer อธิบาย
+  5. วิธี Run โปรเจค
+  6. API ที่ใช้ได้ตอนนี้
+
+
+═══════════════════════════════════════════════════════════════════════
+  1. ภาพรวม Architecture
+═══════════════════════════════════════════════════════════════════════
+
+  โปรเจคนี้ใช้ Clean Architecture แบ่งเป็น 4 layers:
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │   presentation       ← รับ request จาก client                  │
+  │        │                                                        │
+  │        ▼                                                        │
+  │   application         ← business logic, DTO, validation        │
+  │        │                                                        │
+  │        ▼                                                        │
+  │   domain              ← entities, enums, repository interfaces │
+  │        │                                                        │
+  │        ▼                                                        │
+  │   infrastructure      ← JWT, database, email, cache           │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  กฎ: layer ด้านบนเรียก layer ด้านล่างได้
+      layer ด้านล่างห้ามเรียก layer ด้านบน
+      domain ไม่พึ่งพา framework ใดๆ (ยกเว้น JPA annotations)
+
+
+═══════════════════════════════════════════════════════════════════════
+  2. Request Flow (เส้นทางข้อมูล)
+═══════════════════════════════════════════════════════════════════════
+
+  ตัวอย่าง: POST /api/v1/auth/register
+
+  Client
+    │
+    │  POST { name, email, password }
+    ▼
+  ┌──────────────────┐
+  │  JwtAuthFilter   │  ← เช็ค Authorization header (ไม่มี = ผ่านได้เพราะ /auth/**)
+  └──────────────────┘
+    │
+    ▼
+  ┌──────────────────┐
+  │  SecurityConfig  │  ← /api/v1/auth/** = permitAll
+  └──────────────────┘
+    │
+    ▼
+  ┌──────────────────┐
+  │ AuthController   │  ← รับ @RequestBody, @Valid → validate input
+  └──────────────────┘
+    │  เรียก authService.register(request)
+    ▼
+  ┌──────────────────┐
+  │  AuthService     │  ← business logic:
+  │                  │     1. เช็ค email ซ้ำไหม
+  │                  │     2. hash password (BCrypt)
+  │                  │     3. save user
+  │                  │     4. สร้าง JWT access + refresh token
+  └──────────────────┘
+    │  ใช้ UserRepository, JwtTokenProvider, PasswordEncoder
+    ▼
+  ┌──────────────────┐
+  │  UserRepository  │  ← Spring Data JPA → PostgreSQL
+  └──────────────────┘
+    │
+    ▼
+  Client ← { accessToken, refreshToken, user: { id, name, email, role } }
+
+
+  ถ้าเกิด error:
+
+  Exception ─── throw ───▶ GlobalExceptionHandler
+                              │
+                              ├── ResourceNotFoundException → 404
+                              ├── BusinessException → 401/409/400
+                              ├── ValidationException → 400
+                              └── Exception (อื่นๆ) → 500
+                              │
+                              ▼
+                           ApiResponse { success: false, error: { code, message } }
+
+
+═══════════════════════════════════════════════════════════════════════
+  3. Project Tree + คำอธิบาย
+═══════════════════════════════════════════════════════════════════════
+
+  task-management-api/
+  │
+  │── pom.xml ─────────────────────────── [1] Maven build file
+  │                                            กำหนด dependencies ทั้งหมด
+  │                                            Spring Boot 3.4.2, Java 17
+  │                                            JWT, PostgreSQL, Redis, Flyway
+  │
+  │── Dockerfile ──────────────────────── [2] Multi-stage Docker build
+  │                                            Stage 1: Maven build (ใหญ่ ~500MB)
+  │                                            Stage 2: JRE only (เล็ก ~200MB)
+  │
+  │── docker-compose.yml ──────────────── [3] รัน 3 services พร้อมกัน
+  │                                            app (port 8080)
+  │                                            postgres (port 5432)
+  │                                            redis (port 6379)
+  │
+  │── .dockerignore ───────────────────── [4] ไม่ copy target/, .git/ เข้า Docker
+  │
+  │── .github/workflows/
+  │   └── ci.yml ──────────────────────── [5] GitHub Actions CI pipeline
+  │                                            trigger: push main/develop, PR
+  │                                            steps: build → test → package
+  │
+  └── src/
+      │
+      ├── main/java/com/example/taskmanager/
+      │   │
+      │   │── TaskManagerApplication.java ─ [6] Entry point
+      │   │                                      @SpringBootApplication
+      │   │                                      จุดเริ่มต้นของ app ทั้งหมด
+      │   │
+      │   │
+      │   │── domain/ ─────────────────────── LAYER 1: หัวใจของระบบ
+      │   │   │                                ไม่มี business logic ซับซ้อน
+      │   │   │                                แค่กำหนด "ข้อมูลหน้าตาเป็นยังไง"
+      │   │   │
+      │   │   ├── model/
+      │   │   │   │
+      │   │   │   ├── User.java ───────────── [7] Entity: ตาราง users
+      │   │   │   │                                fields: id, email, password,
+      │   │   │   │                                        name, role, avatarUrl
+      │   │   │   │                                ใช้ Lombok: @Getter @Setter @Builder
+      │   │   │   │                                ใช้ JPA: @Entity @Table @Column
+      │   │   │   │
+      │   │   │   └── RefreshToken.java ───── [8] Entity: ตาราง refresh_tokens
+      │   │   │                                    fields: id, user, token, expiresAt
+      │   │   │                                    มี method isExpired()
+      │   │   │                                    ใช้สำหรับ token rotation
+      │   │   │
+      │   │   ├── enums/
+      │   │   │   └── UserRole.java ───────── [9] Enum: ADMIN, MANAGER, MEMBER
+      │   │   │                                    กำหนดระดับสิทธิ์ของ user
+      │   │   │                                    ADMIN > MANAGER > MEMBER
+      │   │   │
+      │   │   └── repository/
+      │   │       │
+      │   │       ├── UserRepository.java ─── [10] Interface: ค้นหา user
+      │   │       │                                 findByEmail(email)
+      │   │       │                                 existsByEmail(email)
+      │   │       │                                 extends JpaRepository = ได้ CRUD ฟรี
+      │   │       │
+      │   │       └── RefreshTokenRepository  [11] Interface: จัดการ refresh token
+      │   │           .java                         findByToken(token)
+      │   │                                         deleteByUserId(userId)
+      │   │
+      │   │
+      │   │── application/ ────────────────── LAYER 2: Business Logic
+      │   │   │                                "ทำอะไร" อยู่ที่นี่
+      │   │   │                                service = use case
+      │   │   │                                dto = data เข้า/ออก
+      │   │   │
+      │   │   ├── service/
+      │   │   │   └── AuthService.java ────── [12] Core Auth Logic
+      │   │   │                                    register(): สร้าง user ใหม่
+      │   │   │                                      → เช็ค email ซ้ำ
+      │   │   │                                      → hash password
+      │   │   │                                      → save + return tokens
+      │   │   │                                    login(): ล็อกอิน
+      │   │   │                                      → หา user by email
+      │   │   │                                      → เทียบ password
+      │   │   │                                      → return tokens
+      │   │   │                                    refresh(): ต่ออายุ token
+      │   │   │                                      → หา refresh token
+      │   │   │                                      → เช็ค expired
+      │   │   │                                      → ลบอันเก่า สร้างอันใหม่
+      │   │   │
+      │   │   ├── dto/request/
+      │   │   │   ├── RegisterRequest.java ── [13] Input: สมัครสมาชิก
+      │   │   │   │                                { name, email, password }
+      │   │   │   │                                validation: @NotBlank @Email @Size
+      │   │   │   │
+      │   │   │   ├── LoginRequest.java ───── [14] Input: ล็อกอิน
+      │   │   │   │                                { email, password }
+      │   │   │   │
+      │   │   │   └── RefreshTokenRequest ─── [15] Input: ต่ออายุ token
+      │   │   │       .java                        { refreshToken }
+      │   │   │
+      │   │   ├── dto/response/
+      │   │   │   ├── ApiResponse.java ────── [16] Response wrapper มาตรฐาน
+      │   │   │   │                                สำเร็จ: { success:true, data, meta }
+      │   │   │   │                                ล้มเหลว: { success:false, error }
+      │   │   │   │                                ทุก endpoint ใช้ format นี้หมด
+      │   │   │   │
+      │   │   │   └── AuthResponse.java ───── [17] Output: ผลลัพธ์ auth
+      │   │   │                                    { accessToken, refreshToken,
+      │   │   │                                      tokenType, expiresIn,
+      │   │   │                                      user: { id, name, email, role } }
+      │   │   │
+      │   │   └── exception/
+      │   │       ├── BusinessException.java ─ [18] Error: business rule ผิด
+      │   │       │                                 มี code + message
+      │   │       │                                 เช่น "EMAIL_EXISTS"
+      │   │       │
+      │   │       └── ResourceNotFound ─────── [19] Error: หาข้อมูลไม่เจอ
+      │   │           Exception.java                เช่น "User not found with id: xxx"
+      │   │
+      │   │
+      │   │── infrastructure/ ─────────────── LAYER 3: ของภายนอก
+      │   │   │                                "ติดต่อโลกภายนอก" อยู่ที่นี่
+      │   │   │                                JWT, Database, Email, Cache
+      │   │   │
+      │   │   └── security/
+      │   │       │
+      │   │       ├── JwtTokenProvider.java ── [20] สร้าง + ตรวจสอบ JWT
+      │   │       │                                 generateAccessToken(userId, email, role)
+      │   │       │                                   → สร้าง JWT signed ด้วย HMAC-SHA
+      │   │       │                                   → หมดอายุ 15 นาที
+      │   │       │                                 generateRefreshToken()
+      │   │       │                                   → สร้าง UUID random
+      │   │       │                                 validateToken(token)
+      │   │       │                                   → parse + verify signature
+      │   │       │                                 getUserIdFromToken(token)
+      │   │       │                                   → อ่าน subject จาก JWT
+      │   │       │
+      │   │       ├── JwtAuthFilter.java ───── [21] Filter: ดัก request ทุกตัว
+      │   │       │                                 1. อ่าน Authorization: Bearer xxx
+      │   │       │                                 2. validate token
+      │   │       │                                 3. ถ้า valid → ใส่ user ลง SecurityContext
+      │   │       │                                 4. ถ้า invalid → ปล่อยผ่าน (ให้ Spring จัดการ)
+      │   │       │                                 extends OncePerRequestFilter
+      │   │       │                                 (ทำงาน 1 ครั้งต่อ request)
+      │   │       │
+      │   │       └── CustomUserDetails ───── [22] โหลด user จาก DB สำหรับ Spring Security
+      │   │           Service.java                  loadUserByUsername(email)
+      │   │                                         → return UserDetails (Spring interface)
+      │   │
+      │   │
+      │   │── presentation/ ───────────────── LAYER 4: API ที่ client เห็น
+      │   │   │                                "รับ request, ส่ง response"
+      │   │   │                                ไม่มี logic ซับซ้อน
+      │   │   │                                แค่เรียก service แล้ว wrap response
+      │   │   │
+      │   │   ├── controller/
+      │   │   │   └── AuthController.java ─── [23] REST API: 3 endpoints
+      │   │   │                                    POST /api/v1/auth/register
+      │   │   │                                    POST /api/v1/auth/login
+      │   │   │                                    POST /api/v1/auth/refresh
+      │   │   │                                    ทุก method: รับ input → เรียก service → wrap ApiResponse
+      │   │   │
+      │   │   └── advice/
+      │   │       └── GlobalException ──────── [24] จับ error ทั้งระบบ
+      │   │           Handler.java                  ResourceNotFoundException → 404
+      │   │                                         BusinessException → 401/409/400
+      │   │                                         ValidationException → 400
+      │   │                                         AccessDenied → 403
+      │   │                                         อื่นๆ → 500
+      │   │                                         ทุก error ออกเป็น ApiResponse format
+      │   │
+      │   │
+      │   └── config/ ────────────────────── ตั้งค่า Spring
+      │       └── SecurityConfig.java ────── [25] ตั้งค่า Security ทั้งระบบ
+      │                                          - ปิด CSRF (เพราะ stateless)
+      │                                          - ปิด session (ใช้ JWT แทน)
+      │                                          - /api/v1/auth/** → เข้าได้เลย
+      │                                          - /swagger-ui/** → เข้าได้เลย
+      │                                          - อื่นๆ → ต้องมี token
+      │                                          - ใส่ JwtAuthFilter ก่อน UsernamePasswordFilter
+      │                                          - BCrypt password encoder
+      │
+      ├── main/resources/
+      │   │
+      │   ├── application.yml ─────────────── [26] Config หลักของ app
+      │   │                                        - database connection (postgres)
+      │   │                                        - redis connection
+      │   │                                        - JWT secret + expiration
+      │   │                                        - flyway migration path
+      │   │                                        - actuator endpoints
+      │   │                                        - swagger path
+      │   │                                        ใช้ ${ENV_VAR:default} pattern
+      │   │
+      │   └── db/migration/
+      │       └── V1__create_users_table ──── [27] Flyway migration ตัวแรก
+      │           .sql                             สร้างตาราง users + refresh_tokens
+      │                                            + indexes สำหรับ email, token
+      │                                            ตั้ง UUID เป็น primary key
+      │
+      └── test/
+          │
+          ├── java/.../
+          │   └── TaskManagerApplication ──── [28] Test: context loads
+          │       Tests.java                       เช็คว่า Spring Boot start ได้
+          │                                        ใช้ @ActiveProfiles("test")
+          │
+          └── resources/
+              └── application-test.yml ────── [29] Config สำหรับ test
+                                                   ใช้ H2 in-memory แทน Postgres
+                                                   ปิด Flyway (ใช้ hibernate auto-ddl)
+                                                   ไม่ต้องมี Docker ก็ test ได้
+
+
+═══════════════════════════════════════════════════════════════════════
+  4. Layer-by-Layer อธิบาย
+═══════════════════════════════════════════════════════════════════════
+
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  LAYER          ทำอะไร           ห้ามทำอะไร                     │
+  │  ─────          ──────           ──────────                     │
+  │  presentation   รับ/ส่ง HTTP     ห้ามมี business logic          │
+  │  application    business logic   ห้ามรู้จัก HTTP, SQL           │
+  │  domain         entities, enums  ห้ามรู้จัก framework           │
+  │  infrastructure DB, JWT, Email   ห้ามมี business logic          │
+  │  config         ตั้งค่า Spring    ห้ามมี logic ใดๆ               │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  ทำไมแบ่งแบบนี้?
+
+  1. Testable   → test AuthService โดยไม่ต้องมี HTTP server
+  2. Swappable  → เปลี่ยน PostgreSQL เป็น MongoDB แก้แค่ infrastructure
+  3. Readable   → อ่าน controller รู้ว่ามี API อะไร
+                   อ่าน service รู้ว่า logic ทำอะไร
+                   อ่าน domain รู้ว่า data หน้าตาเป็นยังไง
+
+
+═══════════════════════════════════════════════════════════════════════
+  5. วิธี Run โปรเจค
+═══════════════════════════════════════════════════════════════════════
+
+  วิธีที่ 1: Docker Compose (แนะนำ)
+  ─────────────────────────────────
+  docker compose up -d          # start postgres + redis + app
+  docker compose logs -f app    # ดู log
+  docker compose down           # หยุด
+
+  วิธีที่ 2: Local Development
+  ─────────────────────────────
+  # ต้อง start postgres + redis ก่อน
+  docker compose up -d postgres redis
+
+  # แล้ว run app
+  mvn spring-boot:run
+
+  วิธีที่ 3: Build JAR
+  ─────────────────────
+  mvn clean package -DskipTests
+  java -jar target/task-management-api-0.1.0.jar
+
+  วิธี Test:
+  ──────────
+  mvn test                       # ใช้ H2 in-memory ไม่ต้อง Docker
+
+
+═══════════════════════════════════════════════════════════════════════
+  6. API ที่ใช้ได้ตอนนี้ (Phase 1)
+═══════════════════════════════════════════════════════════════════════
+
+  Base URL: http://localhost:8080
+
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                                                                  │
+  │  POST /api/v1/auth/register                                      │
+  │  ──────────────────────────                                      │
+  │  Body: { "name": "John", "email": "j@x.com", "password": "xx" } │
+  │  Response: { accessToken, refreshToken, user }                   │
+  │                                                                  │
+  │  POST /api/v1/auth/login                                         │
+  │  ──────────────────────                                          │
+  │  Body: { "email": "j@x.com", "password": "xx" }                 │
+  │  Response: { accessToken, refreshToken, user }                   │
+  │                                                                  │
+  │  POST /api/v1/auth/refresh                                       │
+  │  ────────────────────────                                        │
+  │  Body: { "refreshToken": "uuid-string" }                         │
+  │  Response: { accessToken, refreshToken, user }                   │
+  │                                                                  │
+  │  GET /actuator/health                                            │
+  │  ─────────────────────                                           │
+  │  Response: { "status": "UP" }                                    │
+  │                                                                  │
+  │  GET /swagger-ui.html                                            │
+  │  ─────────────────────                                           │
+  │  Swagger UI (interactive API docs)                               │
+  │                                                                  │
+  └──────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════
+  Files: 29 | Lines of Java: ~550 | Compiles: YES | Phase: 1 of 4
+═══════════════════════════════════════════════════════════════════════
