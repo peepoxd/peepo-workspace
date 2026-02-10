@@ -1,6 +1,3 @@
-[submodule "projects/spring-boot-basic-api"]
-	path = projects/spring-boot-basic-api
-	url = https://github.com/peepoxd/spring-boot-basic-api.git
 [submodule "projects/personal-portfolio"]
 	path = projects/personal-portfolio
 	url = https://github.com/peepoxd/personal-portfolio.git
@@ -13,3 +10,15 @@
 [submodule "projects/order-management-api"]
 	path = projects/order-management-api
 	url = https://github.com/peepoxd/order-management-api.git
+[submodule "projects/demo-granting-system"]
+	path = projects/demo-granting-system
+	url = https://github.com/peepoxd/demo-granting-system.git
+[submodule "projects/ecommerce-microservices"]
+	path = projects/ecommerce-microservices
+	url = https://github.com/peepoxd/ecommerce-microservices.git
+[submodule "projects/task-management-api"]
+	path = projects/task-management-api
+	url = https://github.com/peepoxd/task-management-api.git
+[submodule "projects/task-tracker-cli"]
+	path = projects/task-tracker-cli
+	url = https://github.com/peepoxd/task-tracker-cli.git
