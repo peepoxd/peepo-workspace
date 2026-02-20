@@ -1,0 +1,17 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": "\\Qapplication.yml\\E"},
+      {"pattern": "\\Qapplication.yaml\\E"},
+      {"pattern": "\\Qapplication.properties\\E"},
+      {"pattern": "\\Qmessages.properties\\E"},
+      {"pattern": "\\Qvalidation-messages.properties\\E"},
+      {"pattern": "\\Qstatic/.*\\E"},
+      {"pattern": "\\Qtemplates/.*\\E"}
+    ]
+  },
+  "bundles": [
+    {"name": "messages"},
+    {"name": "ValidationMessages"}
+  ]
+}

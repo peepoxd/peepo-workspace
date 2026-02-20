@@ -7,9 +7,6 @@
 [submodule "projects/e-granting-docs"]
 	path = projects/e-granting-docs
 	url = https://github.com/peepoxd/e-granting-docs.git
-[submodule "projects/order-management-api"]
-	path = projects/order-management-api
-	url = https://github.com/peepoxd/order-management-api.git
 [submodule "projects/demo-granting-system"]
 	path = projects/demo-granting-system
 	url = https://github.com/peepoxd/demo-granting-system.git
